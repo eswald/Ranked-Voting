@@ -1,0 +1,28 @@
+application: wald
+version: dev
+runtime: python
+api_version: 1
+
+handlers:
+- url: /create
+  script: pages.py
+  login: required
+
+- url: /save
+  script: pages.py
+  login: required
+
+- url: /list
+  script: pages.py
+  login: admin
+
+- url: /admin/.*
+  script: $PYTHON_LIB/google/appengine/ext/admin
+  login: admin
+
+- url: /([^/]+)/vote
+  script: pages.py
+  login: required
+
+- url: /.*
+  script: pages.py
