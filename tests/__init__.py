@@ -1,7 +1,7 @@
 r'''Ranked-Pairs Voting Test Suite
     These hacks are required to test within Google App Engine.
     In addition, easy_install WebTest and unittest2,
-    and run unit2 with PYTHONPATH=../google_appengine
+    and run unit2 or nosetests with PYTHONPATH=../google_appengine
 '''#"""#'''
 
 import sys

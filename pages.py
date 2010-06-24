@@ -10,7 +10,8 @@ class Contest(db.Model):
     title = db.StringProperty()
     slug = db.StringProperty()
     description = db.StringProperty(multiline=True)
-    started = db.DateTimeProperty(auto_now_add=True)
+    created = db.DateTimeProperty(auto_now_add=True)
+    starts = db.DateTimeProperty(auto_now_add=True)
     closes = db.DateTimeProperty()
 
 class Entry(db.Model):
@@ -61,7 +62,7 @@ class ListPage(Page):
                     <dl>
         """)
         
-        current = Contest.gql("ORDER BY started DESC LIMIT 10")
+        current = Contest.gql("ORDER BY created DESC LIMIT 10")
         for contest in current:
             self.echo(
                 """
@@ -71,7 +72,7 @@ class ListPage(Page):
                 contest.slug,
                 cgi.escape(contest.title),
                 cgi.escape(contest.description),
-                contest.started,
+                contest.starts,
                 contest.closes,
             )
         
