@@ -4,6 +4,11 @@ r'''Ranked-Pairs Voting Test Suite
     and run unit2 or nosetests with PYTHONPATH=../google_appengine
 '''#"""#'''
 
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
+
 import sys
 from os.path import abspath, dirname, join
 
@@ -27,3 +32,40 @@ def setup():
         format="%(levelname)-8s %(asctime)s %(filename)s] %(message)s")
     config, matcher = dev_appserver.LoadAppConfig(root_path, {})
     dev_appserver.SetupStubs(config.application, **option_dict)
+
+class VotingTestCase(unittest.TestCase):
+    def setUp(self):
+        self.clear_datastore()
+        self.logout()
+    
+    def clear_datastore(self):
+        # Use a fresh stub datastore.
+        from google.appengine.api import apiproxy_stub_map
+        
+        apiproxy_stub_map.apiproxy._APIProxyStubMap__stub_map["datastore_v3"].Clear()
+    
+    def login(self, email="test@somewhere.com", admin=False):
+        from os import environ
+        from google.appengine.api.users import User
+        
+        #environ["USER_IS_ADMIN"] = str(int(bool(admin)))
+        environ["USER_IS_ADMIN"] = ("1" if admin else "0")
+        environ["USER_EMAIL"] = email
+        return User(email=email)
+    
+    def logout(self):
+        from os import environ
+        
+        fields = [
+            "USER_IS_ADMIN",
+            "USER_EMAIL",
+            "USER_ID",
+            "FEDERATED_IDENTITY",
+            "FEDERATED_PROVIDER",
+        ]
+        
+        for field in fields:
+            try:
+                del environ[field]
+            except KeyError:
+                pass
