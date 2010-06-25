@@ -69,10 +69,24 @@ class SlugTestCase(VotingTestCase):
         fetched = Contest.all().fetch(2)
         self.assertEqual(len(fetched), 1)
     
-    def test_reserved(self):
+    def test_reserved_create(self):
+        user = self.login()
+        app = TestApp(application)
+        response = app.post("/save", params={"slug": "create"})
+        fetched = Contest.all().fetch(2)
+        self.assertEqual(len(fetched), 0)
+    
+    def test_reserved_save(self):
         user = self.login()
         app = TestApp(application)
         response = app.post("/save", params={"slug": "save"})
+        fetched = Contest.all().fetch(2)
+        self.assertEqual(len(fetched), 0)
+    
+    def test_reserved_list(self):
+        user = self.login()
+        app = TestApp(application)
+        response = app.post("/save", params={"slug": "list"})
         fetched = Contest.all().fetch(2)
         self.assertEqual(len(fetched), 0)
     
@@ -80,6 +94,13 @@ class SlugTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         response = app.post("/save", params={"slug": ""})
+        fetched = Contest.all().fetch(2)
+        self.assertEqual(len(fetched), 0)
+    
+    def test_omitted(self):
+        user = self.login()
+        app = TestApp(application)
+        response = app.post("/save", params={"title": "Yet Another Design Competition"})
         fetched = Contest.all().fetch(2)
         self.assertEqual(len(fetched), 0)
 
