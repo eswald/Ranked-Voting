@@ -12,6 +12,7 @@ google_path = join(dirname(root_path), "google_appengine")
 sys.path.insert(0, join(google_path, "lib", "yaml", "lib"))
 sys.path.insert(0, join(google_path, "lib", "antlr3"))
 sys.path.insert(0, join(google_path, "lib", "ipaddr"))
+sys.path.insert(0, join(google_path, "lib", "django"))
 sys.path.insert(0, join(google_path, "lib", "webob"))
 sys.path.insert(0, google_path)
 

@@ -1,0 +1,17 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Ranked-Pairs Contest List</title>
+  </head>
+  <body>
+    <h1>Contest Voting</h1>
+    <dl>
+      {% for contest in contests %}
+        <dt><a href="/contest/{{ contest.slug }}">{{ contest.title|escape }}</a></dt>
+        <dd>{{ contest.description|escape }}<br>{{ contest.starts }} - {{ contest.closes }}</dd>
+      {% endfor %}
+    </dl>
+    <hr>
+    <p><a href="/create">Create a new contest!</a></p>
+  </body>
+</html>

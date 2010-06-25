@@ -1,8 +1,10 @@
 import cgi
+from os.path import dirname, join
 from datetime import datetime, timedelta
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
+from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 class Contest(db.Model):
@@ -29,79 +31,28 @@ class Vote(db.Model):
     modified = db.DateTimeProperty(auto_now_add=True)
 
 class Page(webapp.RequestHandler):
+    template_directory = join(dirname(__file__), "html")
+    
     def echo(self, message, *params):
         self.response.out.write(str(message) % params)
+    
+    def render(self, template_name, **values):
+        path = join(self.template_directory, template_name)
+        self.response.out.write(template.render(path, values))
 
 class MainPage(Page):
     def get(self):
-        self.echo("""
-            <html>
-                <head>
-                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-                    <title>Ranked-Pairs Contest Voting</title>
-                </head>
-                <body>
-                    <h1>Contest Voting</h1>
-                    <p>This site may be used for casual purposes only.</p>
-                    <hr>
-                    <p><a href="/create">Create a new contest!</a></p>
-                </body>
-            </html>
-        """)
+        self.render("index.html")
 
 class ListPage(Page):
     def get(self):
-        self.echo("""
-            <html>
-                <head>
-                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-                    <title>Ranked-Pairs Contest List</title>
-                </head>
-                <body>
-                    <h1>Contest Voting</h1>
-                    <dl>
-        """)
-        
         current = Contest.gql("ORDER BY created DESC LIMIT 10")
-        for contest in current:
-            self.echo(
-                """
-                        <dt><a href="/contest/%s">%s</a></dt>
-                        <dd>%s<br>%s - %s</dd>
-                """,
-                contest.slug,
-                cgi.escape(contest.title),
-                cgi.escape(contest.description),
-                contest.starts,
-                contest.closes,
-            )
-        
-        self.echo("""
-                    </dl>
-                    <hr>
-                    <p><a href="/create">Create a new contest!</a></p>
-                </body>
-            </html>
-        """)
+        self.render("list.html", contests=current)
 
 class CreatePage(Page):
     def get(self):
         user = users.get_current_user()
-        self.echo("""
-            <html>
-                <body>
-                    <p>Hello, %s!</p>   
-                    <form action="/save" method="post">
-                        <table>
-                            <tr><td>Title</td><td><input type="text" name="title"></td></tr>
-                            <tr><td>Slug</td><td><input type="text" name="slug"></td></tr>
-                            <tr><td>Description</td><td><textarea name="description">A short description for the front page.</textarea></td></tr>
-                        </table>
-                        <input type="submit" value="Submit">
-                    </form>
-                </body>
-            </html>
-        """, user.nickname())
+        self.render("create.html", user=user)
 
 class SavePage(Page):
     reserved = ["", "create", "save", "list", "admin"]
