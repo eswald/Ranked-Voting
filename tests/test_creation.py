@@ -103,6 +103,41 @@ class SlugTestCase(VotingTestCase):
         response = app.post("/save", params={"title": "Yet Another Design Competition"})
         fetched = Contest.all().fetch(2)
         self.assertEqual(len(fetched), 0)
+    
+    def test_lowercased(self):
+        request = "AbCd"
+        user = self.login()
+        app = TestApp(application)
+        response = app.post("/save", params={"slug": request})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEqual(fetched.slug, request.lower())
+    
+    def test_punctuation(self):
+        # The slug should replace punctuation with hyphens.
+        request = "one and two, three and four; five"
+        user = self.login()
+        app = TestApp(application)
+        response = app.post("/save", params={"slug": request})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEqual(fetched.slug, "one-and-two-three-and-four-five")
+    
+    def test_trimmed(self):
+        # Spaces and hyphens should be trimmed from the ends of the slug.
+        request = "-inner: "
+        user = self.login()
+        app = TestApp(application)
+        response = app.post("/save", params={"slug": request})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEqual(fetched.slug, "inner")
+    
+    def test_numbers(self):
+        # Periods should be allowed, particularly in numbers.
+        request = "something-1.3"
+        user = self.login()
+        app = TestApp(application)
+        response = app.post("/save", params={"slug": request})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEqual(fetched.slug, request)
 
 class TitleTestCase(VotingTestCase):
     def test_added(self):

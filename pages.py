@@ -1,5 +1,6 @@
 import cgi
 import logging
+from re import sub
 from os.path import dirname, join
 from datetime import datetime, timedelta
 from dateutil.parser import parser as date_parser
@@ -59,12 +60,13 @@ class CreatePage(Page):
 
 class SavePage(Page):
     reserved = ["", "create", "save", "list", "admin"]
+    
     def post(self):
         try:
             contest = Contest()
             contest.creator = users.get_current_user()
             
-            contest.slug = self.request.get("slug").strip()
+            contest.slug = self._slugify(self.request.get("slug"))
             assert contest.slug not in self.reserved
             assert not list(Contest.gql("WHERE slug = :1 LIMIT 1", contest.slug))
             
@@ -87,6 +89,10 @@ class SavePage(Page):
             self.redirect("/")
         except Exception as err:
             self.render("create.html", defaults=contest, error=err)
+    
+    def _slugify(self, request):
+        slug = sub(r"[^a-z.0-9]+", "-", request.lower())
+        return slug.strip("-")
 
 class VotePage(Page):
     def get(self):
