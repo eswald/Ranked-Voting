@@ -1,6 +1,9 @@
 import cgi
+import logging
 from os.path import dirname, join
 from datetime import datetime, timedelta
+from dateutil.parser import parser as date_parser
+
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -57,14 +60,33 @@ class CreatePage(Page):
 class SavePage(Page):
     reserved = ["", "create", "save", "list", "admin"]
     def post(self):
-        contest = Contest()
-        contest.creator = users.get_current_user()
-        contest.title = self.request.get("title").strip()
-        contest.slug = self.request.get("slug").strip()
-        contest.description = self.request.get("description").strip()
-        contest.closes = datetime.now() + timedelta(days=14)
-        contest.put()
-        self.redirect("/")
+        try:
+            contest = Contest()
+            contest.creator = users.get_current_user()
+            
+            contest.slug = self.request.get("slug").strip()
+            assert contest.slug not in self.reserved
+            assert not list(Contest.gql("WHERE slug = :1 LIMIT 1", contest.slug))
+            
+            contest.title = self.request.get("title").strip()
+            contest.description = self.request.get("description").strip()
+            
+            when = self.request.get("starts")
+            if when:
+                contest.starts = date_parser().parse(when)
+            else:
+                contest.starts = datetime.now()
+            
+            when = self.request.get("closes")
+            if when:
+                contest.closes = date_parser().parse(when)
+            else:
+                contest.closes = contest.starts + timedelta(days=14)
+            
+            contest.put()
+            self.redirect("/")
+        except Exception as err:
+            self.render("create.html", defaults=contest, error=err)
 
 class VotePage(Page):
     def get(self):
