@@ -6,6 +6,13 @@
   <body>
     <h1>Contest Voting</h1>
     <p>This site may be used for casual purposes only.</p>
+    <h2>Open Contests</h2>
+    <dl>
+      {% for contest in contests %}
+        <dt><a href="/contest/{{ contest.slug }}">{{ contest.title|escape }}</a></dt>
+        <dd>{{ contest.description|escape }}</dd>
+      {% endfor %}
+    </dl>
     <hr>
     <p><a href="/create">Create a new contest!</a></p>
   </body>

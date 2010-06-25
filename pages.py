@@ -18,6 +18,7 @@ class Contest(db.Model):
     created = db.DateTimeProperty(auto_now_add=True)
     starts = db.DateTimeProperty(auto_now_add=True)
     closes = db.DateTimeProperty()
+    public = db.BooleanProperty(default=False)
 
 class Entry(db.Model):
     contest = db.ReferenceProperty(Contest)
@@ -45,7 +46,8 @@ class Page(webapp.RequestHandler):
 
 class MainPage(Page):
     def get(self):
-        self.render("index.html")
+        current = Contest.gql("WHERE public = True ORDER BY created DESC LIMIT 10")
+        self.render("index.html", contests=current)
 
 class ListPage(Page):
     def get(self):
@@ -71,6 +73,7 @@ class SavePage(Page):
             
             contest.title = self.request.get("title").strip() or contest.slug
             contest.description = self.request.get("description").strip()
+            contest.public = bool(self.request.get("public"))
             
             when = self.request.get("starts")
             if when:

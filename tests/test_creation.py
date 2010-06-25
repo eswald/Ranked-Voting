@@ -172,3 +172,18 @@ class TitleTestCase(VotingTestCase):
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.title, fetched.slug)
 
+class PublicTestCase(VotingTestCase):
+    def test_default(self):
+        user = self.login()
+        app = TestApp(application)
+        response = app.post("/save", params={"slug": "abcd"})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEqual(fetched.public, False)
+    
+    def test_checked(self):
+        user = self.login()
+        app = TestApp(application)
+        response = app.post("/save", params={"slug": "abcd", "public": "1"})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEqual(fetched.public, True)
+
