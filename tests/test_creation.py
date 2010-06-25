@@ -99,4 +99,20 @@ class TitleTestCase(VotingTestCase):
         response = app.post("/save", params={"slug": "abcd", "title": title})
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.title, title.strip())
+    
+    def test_default(self):
+        # The title, if omitted, should default to the slug.
+        user = self.login()
+        app = TestApp(application)
+        response = app.post("/save", params={"slug": "abcd"})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEquals(fetched.title, fetched.slug)
+    
+    def test_blank(self):
+        # The title, if blank, should default to the slug.
+        user = self.login()
+        app = TestApp(application)
+        response = app.post("/save", params={"slug": "abcd", "title": ""})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEquals(fetched.title, fetched.slug)
 
