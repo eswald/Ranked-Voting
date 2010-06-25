@@ -1,4 +1,3 @@
-import cgi
 import logging
 from re import sub
 from os.path import dirname, join
@@ -104,14 +103,7 @@ class ContestPage(Page):
     def get(self):
         slug = self.request.url.split("/")[3]
         contest = Contest.gql("WHERE slug = :1 LIMIT 1", slug)[0]
-        self.echo("""
-            <html>
-                <body>
-                    <h1>%s</h1>
-                    <p>%s</p>
-                </body>
-            </html>
-        """, cgi.escape(contest.title), cgi.escape(contest.description))
+        self.render("contest.html", contest=contest)
 
 application = webapp.WSGIApplication([
         ("/", MainPage),
