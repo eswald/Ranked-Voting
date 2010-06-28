@@ -4,6 +4,21 @@ from tests import VotingTestCase
 from webtest import TestApp
 
 class RootTestCase(VotingTestCase):
+    def check_shown(self, shown, public=True, closes=+1):
+        slug = "abcd"
+        title = "Yet another design contest"
+        closing = datetime.now() + timedelta(days=closes)
+        Contest(slug=slug, title=title, public=public, closes=closing).put()
+        app = TestApp(application)
+        response = app.get("/")
+        print response
+        if shown:
+            self.assertIn(title, response)
+            self.assertIn("/"+slug, response)
+        else:
+            self.assertNotIn(title, response)
+            self.assertNotIn("/"+slug, response)
+    
     def test_index(self):
         app = TestApp(application)
         response = app.get("/")
@@ -12,39 +27,15 @@ class RootTestCase(VotingTestCase):
     
     def test_public_listed(self):
         # Public, currently-open contests should be listed on the front page.
-        slug = "abcd"
-        title = "Yet another design contest"
-        closing = datetime.now() + timedelta(days=1)
-        Contest(slug=slug, title=title, public=True, closes=closing).put()
-        app = TestApp(application)
-        response = app.get("/")
-        print response
-        self.assertIn(title, response)
-        self.assertIn("/"+slug, response)
+        self.check_shown(shown=True, public=True, closes=+1)
     
     def test_nonpublic_unlisted(self):
         # Non-public contests should never appear on the front page.
-        slug = "abcd"
-        title = "Yet another design contest"
-        closing = datetime.now() + timedelta(days=1)
-        Contest(slug=slug, title=title, public=False, closes=closing).put()
-        app = TestApp(application)
-        response = app.get("/")
-        print response
-        self.assertNotIn(title, response)
-        self.assertNotIn("/"+slug, response)
+        self.check_shown(shown=False, public=False)
     
     def test_finished_unlisted(self):
         # Contests should never appear on the front page after they close.
-        slug = "abcd"
-        title = "Yet another design contest"
-        closing = datetime.now() - timedelta(days=1)
-        Contest(slug=slug, title=title, public=True, closes=closing).put()
-        app = TestApp(application)
-        response = app.get("/")
-        print response
-        self.assertNotIn(title, response)
-        self.assertNotIn("/"+slug, response)
+        self.check_shown(shown=False, closes=-1)
 
 class ContestTestCase(VotingTestCase):
     def test_title(self):
