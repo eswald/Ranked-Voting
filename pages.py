@@ -70,7 +70,7 @@ class SavePage(Page):
             
             contest.slug = self._slugify(self.request.get("slug"))
             assert contest.slug not in self.reserved
-            assert not list(Contest.gql("WHERE slug = :1 LIMIT 1", contest.slug))
+            assert not list(db.GqlQuery("SELECT __key__ FROM Contest WHERE slug = :1 LIMIT 1", contest.slug))
             
             contest.title = self.request.get("title").strip() or contest.slug
             contest.description = self.request.get("description").strip()
