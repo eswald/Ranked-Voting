@@ -19,11 +19,11 @@ class RootTestCase(VotingTestCase):
             self.assertNotIn(title, response)
             self.assertNotIn("/"+slug, response)
     
-    def test_index(self):
+    def test_create_link(self):
         app = TestApp(application)
         response = app.get("/")
         print response
-        self.assertIn("Create", response)
+        self.assertIn("/create", response)
     
     def test_public_listed(self):
         # Public, currently-open contests should be listed on the front page.
