@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from pages import Contest, application
 from tests import VotingTestCase
 from webtest import TestApp
@@ -13,7 +14,8 @@ class RootTestCase(VotingTestCase):
         # Public, currently-open contests should be listed on the front page.
         slug = "abcd"
         title = "Yet another design contest"
-        Contest(slug=slug, title=title, public=True).put()
+        closing = datetime.now() + timedelta(days=1)
+        Contest(slug=slug, title=title, public=True, closes=closing).put()
         app = TestApp(application)
         response = app.get("/")
         print response
@@ -24,7 +26,20 @@ class RootTestCase(VotingTestCase):
         # Non-public contests should never appear on the front page.
         slug = "abcd"
         title = "Yet another design contest"
-        Contest(slug=slug, title=title, public=False).put()
+        closing = datetime.now() + timedelta(days=1)
+        Contest(slug=slug, title=title, public=False, closes=closing).put()
+        app = TestApp(application)
+        response = app.get("/")
+        print response
+        self.assertNotIn(title, response)
+        self.assertNotIn("/"+slug, response)
+    
+    def test_finished_unlisted(self):
+        # Contests should never appear on the front page after they close.
+        slug = "abcd"
+        title = "Yet another design contest"
+        closing = datetime.now() - timedelta(days=1)
+        Contest(slug=slug, title=title, public=True, closes=closing).put()
         app = TestApp(application)
         response = app.get("/")
         print response

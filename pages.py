@@ -46,7 +46,8 @@ class Page(webapp.RequestHandler):
 
 class MainPage(Page):
     def get(self):
-        current = Contest.gql("WHERE public = True ORDER BY created DESC LIMIT 10")
+        now = datetime.now()
+        current = Contest.gql("WHERE public = True AND closes > :1 ORDER BY closes LIMIT 10", now)
         self.render("index.html", contests=current)
 
 class ListPage(Page):
