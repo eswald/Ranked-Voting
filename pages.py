@@ -70,7 +70,6 @@ class SavePage(Page):
             
             contest.slug = self._slugify(self.request.get("slug"))
             assert contest.slug not in self.reserved
-            assert not list(db.GqlQuery("SELECT __key__ FROM Contest WHERE slug = :1 LIMIT 1", contest.slug))
             
             contest.title = self.request.get("title").strip() or contest.slug
             contest.description = self.request.get("description").strip()
@@ -88,6 +87,10 @@ class SavePage(Page):
             else:
                 contest.closes = contest.starts + timedelta(days=14)
             
+            # Check for duplication as the absolute last thing before
+            # inserting, for slightly better protection.
+            # Consider rolling back if there are two of them after inserting.
+            assert not list(db.GqlQuery("SELECT __key__ FROM Contest WHERE slug = :1 LIMIT 1", contest.slug))
             contest.put()
             self.redirect("/")
         except Exception as err:
