@@ -84,3 +84,35 @@ class MajorityTestCase(VotingTestCase):
         result = list(plurality(self.case, self.candidates))
         self.assertEqual(result, [0, 1, 2, 3])
 
+class EqualRanksTestCase(VotingTestCase):
+    # Voting methods should accept tuples to indicate equal ranks.
+    candidates = range(4)
+    votes = [
+        ([0, (1, 2), 3], 6),
+        ([1, 2, (0, 3)], 4),
+        ([2, 3, 1, 0], 3),
+        ([(1, 0), 2, 3], 2),
+        ([0, 2, (1, 3)], 1),
+    ]
+    
+    def test_pairs(self):
+        # 0/1:  +7 -7  =
+        # 0/2:  +9 -7  +
+        # 0/3:  +9 -3  +
+        # 1/2:  +6 -4  +
+        # 1/3: +12 -3  +
+        # 2/3: +16 -0  +
+        result = list(rankedpairs(self.votes, self.candidates))
+        self.assertEqual(result, [(0, 1), 2, 3])
+    
+    def test_irv(self):
+        # 0: 8, 1: 5, 2: 3, 3: 0
+        # 0: 8, 1: 8
+        result = list(instantrunoff(self.votes, self.candidates))
+        self.assertEqual(result, [(0, 1), 2, 3])
+    
+    def test_plural(self):
+        # 0: 8, 1: 5, 2: 3, 3: 0
+        result = list(plurality(self.votes, self.candidates))
+        self.assertEqual(result, [0, 1, 2, 3])
+
