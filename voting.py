@@ -17,10 +17,10 @@ def export(method):
     return method
 
 def maybe_tuple(items):
-    if len(items) == 1:
-        return items[0]
-    else:
-        return tuple(items)
+    result = tuple(items)
+    if len(result) == 1:
+        result = result[0]
+    return result
 
 class Graph(object):
     r'''Acyclic graph structure.
@@ -100,7 +100,39 @@ def rankedpairs(votes, candidates):
 
 @export
 def instantrunoff(votes, candidates):
-    pass
+    # Instant Runoff Voting (IRV)
+    # Modified to return a total ordering.
+    candidates = set(candidates)
+    majority = (sum(item[1] for item in votes) + 1) // 2
+    
+    winners = []
+    losers = []
+    while candidates:
+        totals = dict.fromkeys(candidates, 0)
+        for ranks, count in votes:
+            for candidate in ranks:
+                if candidate in candidates:
+                    totals[candidate] += count
+                    break
+        
+        counts = defaultdict(set)
+        for key in totals:
+            counts[totals[key]].add(key)
+        
+        top = max(counts)
+        if top >= majority:
+            # We have a winner!
+            found = counts[top]
+            winners.append(maybe_tuple(found))
+        else:
+            # Eliminate the losers.
+            found = counts[min(counts)]
+            losers.insert(0, maybe_tuple(found))
+        
+        # Remove ranked candidates from the list
+        candidates.difference_update(found)
+    
+    return winners + losers
 
 @export
 def plurality(votes, candidates):
