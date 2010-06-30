@@ -214,3 +214,46 @@ class PublicTestCase(VotingTestCase):
         fetched = Contest.all().fetch(1)[0]
         self.assertEqual(fetched.public, False)
 
+class DescriptionTestCase(VotingTestCase):
+    def test_added(self):
+        user = self.login()
+        app = TestApp(application)
+        description = "Contest Description goes Here"
+        response = app.post("/save", params={"slug": "abcd", "description": description})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEquals(fetched.description, description)
+    
+    def test_multiline(self):
+        user = self.login()
+        app = TestApp(application)
+        description = "Contest Description goes Here.\nMore lines are explicitly allowed."
+        response = app.post("/save", params={"slug": "abcd", "description": description})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEquals(fetched.description, description)
+    
+    def test_trimmed(self):
+        user = self.login()
+        app = TestApp(application)
+        description = " Contest Description goes Here\n"
+        response = app.post("/save", params={"slug": "abcd", "description": description})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEquals(fetched.description, description.strip())
+    
+    def test_default(self):
+        # The description has something resembling a reasonable default.
+        user = self.login()
+        app = TestApp(application)
+        default = "Created by " + user.nickname()
+        response = app.post("/save", params={"slug": "abcd"})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEquals(fetched.description, default)
+    
+    def test_blank(self):
+        # The title, if blank, should default to the slug.
+        user = self.login()
+        app = TestApp(application)
+        default = "Created by " + user.nickname()
+        response = app.post("/save", params={"slug": "abcd", "description": ""})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEquals(fetched.description, default)
+

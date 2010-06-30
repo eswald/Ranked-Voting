@@ -72,8 +72,10 @@ class SavePage(Page):
             assert contest.slug not in self.reserved
             
             contest.title = self.request.get("title").strip() or contest.slug
-            contest.description = self.request.get("description").strip()
             contest.public = bool(self.request.get("public"))
+            
+            default = "Created by " + contest.creator.nickname()
+            contest.description = self.request.get("description").strip() or default
             
             when = self.request.get("starts")
             if when:
