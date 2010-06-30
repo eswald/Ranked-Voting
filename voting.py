@@ -53,16 +53,14 @@ class Graph(object):
         '''#"""#'''
         return bool(self.vertices)
 
-def rankedpairs(prefs):
+def rankedpairs(votes, candidates):
     # Tideman method, using a graph of preferences data.
     # Modified by ignoring unstated candidates, instead of
     # assuming that they're all worse than the ranked ones.
-    candidates = set()
     comparisons = defaultdict(int)
-    for ranks, count in prefs:
+    for ranks, count in votes:
         above = []
         for candidate in ranks:
-            candidates.add(candidate)
             for former in above:
                 comparisons[former, candidate] += count
             above.append(candidate)
@@ -83,19 +81,15 @@ def rankedpairs(prefs):
         for item in winners:
             graph.remove(item)
 
-def instantrunoff(prefs):
+def instantrunoff(votes, candidates):
     pass
 
-def plurality(prefs):
+def plurality(votes, candidates):
     # First past the post, winner takes all.
     # Only the top preference is even looked at.
-    totals = defaultdict(int)
-    for ranks, count in prefs:
+    totals = dict.fromkeys(candidates, 0)
+    for ranks, count in votes:
         totals[ranks[0]] += count
-        
-        # Ensure that the other candidates make it into the result.
-        for candidate in ranks[1:]:
-            totals[candidate] += 0
     
     counts = defaultdict(list)
     for key in totals:
@@ -105,17 +99,17 @@ def plurality(prefs):
     result.reverse()
     return [_maybe_tuple(counts[total]) for total in result]
 
-def borda(prefs):
+def borda(votes, candidates):
     pass
 
-def bucklin(prefs):
+def bucklin(votes, candidates):
     pass
 
-def minimax(prefs):
+def minimax(votes, candidates):
     pass
 
-def schulze(prefs):
+def schulze(votes, candidates):
     pass
 
-def kemeny(prefs):
+def kemeny(votes, candidates):
     pass
