@@ -3,25 +3,24 @@ from voting import *
 
 class TenesseeTestCase(VotingTestCase):
     candidates = ["Memphis", "Nashville", "Chattanooga", "Knoxville"]
-    M, N, C, K = 0, 1, 2, 3
     case = [
-        ([M, N, C, K], 42),
-        ([N, C, K, M], 26),
-        ([C, K, N, M], 15),
-        ([K, C, N, M], 17),
+        ([0, 1, 2, 3], 42),
+        ([1, 2, 3, 0], 26),
+        ([2, 3, 1, 0], 15),
+        ([3, 2, 1, 0], 17),
     ]
     
     def test_pairs(self):
         result = list(rankedpairs(self.case))
-        self.assertEqual(result, [N, C, K, M])
+        self.assertEqual(result, [1, 2, 3, 0])
     
     def test_irv(self):
         result = list(instantrunoff(self.case))
-        self.assertEqual(result, [K, M, N, C])
+        self.assertEqual(result, [3, 0, 1, 2])
     
     def test_plural(self):
         result = list(plurality(self.case))
-        self.assertEqual(result, [M, N, K, C])
+        self.assertEqual(result, [0, 1, 3, 2])
 
 class UniversalTestCase(VotingTestCase):
     candidates = ["Best", "Maybe", "Possibly", "Reviled"]
