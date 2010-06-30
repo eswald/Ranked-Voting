@@ -11,12 +11,31 @@ class UserTestCase(VotingTestCase):
         response = app.post("/save", params={"slug": "abcd"})
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.creator, user)
+    
+    def test_user_ignored(self):
+        # The save routine should ignore a submitted user parameter.
+        user = self.login()
+        email = "nobody@nowhere.com"
+        other = User(email=email)
+        app = TestApp(application)
+        response = app.post("/save", params={"slug": "abcd", "user": email})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEquals(fetched.creator, user)
 
 class CreationTestCase(VotingTestCase):
     def test_added(self):
         user = self.login()
         app = TestApp(application)
         response = app.post("/save", params={"slug": "abcd"})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertAlmostEqual(fetched.created, datetime.now(), delta=timedelta(seconds=2))
+    
+    def test_creation_ignored(self):
+        # The save routine should ignore a submitted created parameter.
+        user = self.login()
+        now = datetime.now()
+        app = TestApp(application)
+        response = app.post("/save", params={"slug": "abcd", "created": now + timedelta(days=2)})
         fetched = Contest.all().fetch(1)[0]
         self.assertAlmostEqual(fetched.created, datetime.now(), delta=timedelta(seconds=2))
 
@@ -186,4 +205,12 @@ class PublicTestCase(VotingTestCase):
         response = app.post("/save", params={"slug": "abcd", "public": "1"})
         fetched = Contest.all().fetch(1)[0]
         self.assertEqual(fetched.public, True)
+    
+    def test_explicit(self):
+        # An empty string for the public attribute is interpreted as false.
+        user = self.login()
+        app = TestApp(application)
+        response = app.post("/save", params={"slug": "abcd", "public": ""})
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEqual(fetched.public, False)
 
