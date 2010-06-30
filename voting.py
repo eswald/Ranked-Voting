@@ -1,3 +1,13 @@
+r'''Ranked voting methods.
+    Each method here is a function with two parameters:
+        `votes` - A sequence of tuples.
+            The first item is a list of candidate keys in ranked order;
+            each item may be a tuple to indicate equal rankings.
+            The second item is the number of times this sequence appears.
+        `candidates` - A sequence of candidate keys.
+            Keys in the vote rankings that don't appear in this list will be ignored.
+'''#"""#'''
+
 from collections import defaultdict
 
 def _maybe_tuple(items):
