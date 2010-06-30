@@ -10,7 +10,13 @@ r'''Ranked voting methods.
 
 from collections import defaultdict
 
-def _maybe_tuple(items):
+__all__ = []
+
+def export(method):
+    __all__.append(method.__name__)
+    return method
+
+def maybe_tuple(items):
     if len(items) == 1:
         return items[0]
     else:
@@ -63,6 +69,7 @@ class Graph(object):
         '''#"""#'''
         return bool(self.vertices)
 
+@export
 def rankedpairs(votes, candidates):
     # Tideman method, using a graph of preferences data.
     # Modified by ignoring unstated candidates, instead of
@@ -87,13 +94,15 @@ def rankedpairs(votes, candidates):
     
     while graph:
         winners = graph.roots()
-        yield _maybe_tuple(winners)
+        yield maybe_tuple(winners)
         for item in winners:
             graph.remove(item)
 
+@export
 def instantrunoff(votes, candidates):
     pass
 
+@export
 def plurality(votes, candidates):
     # First past the post, winner takes all.
     # Only the top preference is even looked at.
@@ -107,19 +116,24 @@ def plurality(votes, candidates):
     
     result = sorted(counts)
     result.reverse()
-    return [_maybe_tuple(counts[total]) for total in result]
+    return [maybe_tuple(counts[total]) for total in result]
 
+@export
 def borda(votes, candidates):
     pass
 
+@export
 def bucklin(votes, candidates):
     pass
 
+@export
 def minimax(votes, candidates):
     pass
 
+@export
 def schulze(votes, candidates):
     pass
 
+@export
 def kemeny(votes, candidates):
     pass
