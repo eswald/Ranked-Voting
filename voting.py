@@ -170,7 +170,28 @@ def plurality(votes, candidates):
 
 @export
 def borda(votes, candidates):
-    return []
+    # Borda Count method.
+    # Unfortunately, this one penalizes unranked candidates.
+    topval = len(candidates)
+    ratings = dict.fromkeys(candidates, 0)
+    for ranks, count in votes:
+        value = topval
+        for row in unwind(ranks):
+            # Todo: Simplify this calculation.
+            thisval = 0
+            for c in row:
+                value -= 1
+                thisval += value
+            thisval *= count
+            thisval /= len(row)
+            
+            for candidate in row:
+                ratings[candidate] += thisval
+    
+    counts = defaultdict(list)
+    for key in ratings:
+        counts[ratings[key]].append(key)
+    return [maybe_tuple(counts[total]) for total in reversed(sorted(counts))]
 
 @export
 def modified_borda(votes, candidates):
