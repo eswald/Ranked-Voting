@@ -8,6 +8,7 @@ r'''Ranked voting methods.
             Keys in the vote rankings that don't appear in this list will be ignored.
 '''#"""#'''
 
+from __future__ import division
 from collections import defaultdict
 
 __all__ = []
@@ -17,10 +18,17 @@ def export(method):
     return method
 
 def maybe_tuple(items):
-    result = tuple(items)
+    result = tuple(sorted(items))
     if len(result) == 1:
         result = result[0]
     return result
+
+def unwind(ranks):
+    for row in ranks:
+        if isinstance(row, (tuple, set)):
+            yield set(row)
+        else:
+            yield set([row])
 
 class Graph(object):
     r'''Acyclic graph structure.
@@ -76,11 +84,12 @@ def rankedpairs(votes, candidates):
     # assuming that they're all worse than the ranked ones.
     comparisons = defaultdict(int)
     for ranks, count in votes:
-        above = []
-        for candidate in ranks:
-            for former in above:
-                comparisons[former, candidate] += count
-            above.append(candidate)
+        above = set()
+        for row in unwind(ranks):
+            for candidate in row:
+                for former in above:
+                    comparisons[former, candidate] += count
+            above.update(row)
     
     # This seemingly-useless conversion avoids an error
     # caused by adding new items during iteration.
@@ -90,7 +99,8 @@ def rankedpairs(votes, candidates):
     
     graph = Graph(candidates)
     for major, minor, better, worse in reversed(majorities):
-        result = graph.edge(better, worse)
+        if major > minor:
+            result = graph.edge(better, worse)
     
     while graph:
         winners = graph.roots()
@@ -103,16 +113,20 @@ def instantrunoff(votes, candidates):
     # Instant Runoff Voting (IRV)
     # Modified to return a total ordering.
     candidates = set(candidates)
-    majority = (sum(item[1] for item in votes) + 1) // 2
+    majority = sum(item[1] for item in votes) / 2
     
     winners = []
     losers = []
     while candidates:
         totals = dict.fromkeys(candidates, 0)
         for ranks, count in votes:
-            for candidate in ranks:
-                if candidate in candidates:
-                    totals[candidate] += count
+            for row in unwind(ranks):
+                possible = row & candidates
+                if possible:
+                    # Divide the votes evenly among the preferences.
+                    value = count / len(possible)
+                    for candidate in possible:
+                        totals[candidate] += value
                     break
         
         counts = defaultdict(set)
@@ -120,7 +134,7 @@ def instantrunoff(votes, candidates):
             counts[totals[key]].add(key)
         
         top = max(counts)
-        if top >= majority:
+        if top > majority:
             # We have a winner!
             found = counts[top]
             winners.append(maybe_tuple(found))
@@ -140,7 +154,11 @@ def plurality(votes, candidates):
     # Only the top preference is even looked at.
     totals = dict.fromkeys(candidates, 0)
     for ranks, count in votes:
-        totals[ranks[0]] += count
+        for row in unwind(ranks):
+            value = count / len(row)
+            for candidate in row:
+                totals[candidate] += value
+            break;
     
     counts = defaultdict(list)
     for key in totals:
