@@ -64,9 +64,9 @@ class UniversalTestCase(VotingTestCase):
         result = list(borda(self.case, self.candidates))
         self.assertEqual(result, [0, 1, 2, 3])
 
-class MajorityTestCase(VotingTestCase):
-    # Majority criterion -- If there exists a majority that ranks a single
-    # candidate higher than all other candidates, does that candidate win?
+class ReviledTestCase(VotingTestCase):
+    # A candidate ranked last by everyone should not win.
+    # This case is just a bit more complex than the Universal one.
     candidates = {
         0: "Best",
         1: "Maybe",
@@ -98,6 +98,38 @@ class MajorityTestCase(VotingTestCase):
     def test_borda(self):
         result = list(borda(self.case, self.candidates))
         self.assertEqual(result, [0, 1, 2, 3])
+
+class MajorityTestCase(VotingTestCase):
+    # Majority criterion -- If there exists a majority that ranks a single
+    # candidate higher than all other candidates, does that candidate win?
+    # http://en.wikipedia.org/wiki/Borda_count
+    
+    candidates = ["Andrew", "Brian", "Catherine", "David"]
+    
+    case = [
+        (["Andrew", "Catherine", "Brian", "David"], 51),
+        (["Catherine", "Brian", "David", "Andrew"], 5),
+        (["Brian", "Catherine", "David", "Andrew"], 23),
+        (["David", "Catherine", "Brian", "Andrew"], 21),
+    ]
+    
+    def test_pairs(self):
+        result = list(rankedpairs(self.case, self.candidates))
+        self.assertEqual(result, ["Andrew", "Catherine", "Brian", "David"])
+    
+    def test_irv(self):
+        result = list(instantrunoff(self.case, self.candidates))
+        self.assertEqual(result, ["Andrew", "Catherine", "Brian", "David"])
+    
+    def test_plural(self):
+        result = list(plurality(self.case, self.candidates))
+        self.assertEqual(result, ["Andrew", "Brian", "David", "Catherine"])
+    
+    def test_borda(self):
+        # Andrew has a clear majority, but is hated by almost half.
+        # Catherine is at least second place for everybody.
+        result = list(borda(self.case, self.candidates))
+        self.assertEqual(result, ["Catherine", "Andrew", "Brian", "David"])
 
 class EqualRanksTestCase(VotingTestCase):
     # Voting methods should accept tuples to indicate equal ranks.
@@ -133,13 +165,13 @@ class EqualRanksTestCase(VotingTestCase):
     
     def test_borda(self):
         # 18   9     9  0
-        #  2   8    12  2
+        #  2  12     8  2
         #  0   3     9  6
         #  5   5     2  0
         #  3   0.5   2  0.5
-        # 28  25.5  34  8.5
+        # 28  29.5  30  8.5
         result = list(borda(self.votes, self.candidates))
-        self.assertEqual(result, [2, 0, 1, 3])
+        self.assertEqual(result, [2, 1, 0, 3])
 
 class MonotonicityTestCase(VotingTestCase):
     # Increasing a candidate's rating should not hurt,
