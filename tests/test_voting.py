@@ -2,6 +2,9 @@ from tests import VotingTestCase
 from voting import *
 
 class TenesseeTestCase(VotingTestCase):
+    # Hypothetical election to select a state capital.
+    # http://en.wikipedia.org/wiki/Borda_count
+    
     candidates = {
         0: "Memphis",
         1: "Nashville",
@@ -27,6 +30,10 @@ class TenesseeTestCase(VotingTestCase):
     def test_plural(self):
         result = list(plurality(self.case, self.candidates))
         self.assertEqual(result, [0, 1, 3, 2])
+    
+    def test_borda(self):
+        result = list(borda(self.case, self.candidates))
+        self.assertEqual(result, [1, 2, 0, 3])
 
 class UniversalTestCase(VotingTestCase):
     candidates = {
@@ -52,6 +59,10 @@ class UniversalTestCase(VotingTestCase):
     def test_plural(self):
         result = list(plurality(self.case, self.candidates))
         self.assertEqual(result, [0, (1, 2, 3)])
+    
+    def test_borda(self):
+        result = list(borda(self.case, self.candidates))
+        self.assertEqual(result, [0, 1, 2, 3])
 
 class MajorityTestCase(VotingTestCase):
     # Majority criterion -- If there exists a majority that ranks a single
@@ -82,6 +93,10 @@ class MajorityTestCase(VotingTestCase):
     
     def test_plural(self):
         result = list(plurality(self.case, self.candidates))
+        self.assertEqual(result, [0, 1, 2, 3])
+    
+    def test_borda(self):
+        result = list(borda(self.case, self.candidates))
         self.assertEqual(result, [0, 1, 2, 3])
 
 class EqualRanksTestCase(VotingTestCase):
@@ -115,4 +130,14 @@ class EqualRanksTestCase(VotingTestCase):
         # 0: 8, 1: 5, 2: 3, 3: 0
         result = list(plurality(self.votes, self.candidates))
         self.assertEqual(result, [0, 1, 2, 3])
+    
+    def test_borda(self):
+        # 18   9     9  0
+        #  2   8    12  2
+        #  0   3     9  6
+        #  5   5     2  0
+        #  3   0.5   2  0.5
+        # 28  25.5  34  8.5
+        result = list(borda(self.votes, self.candidates))
+        self.assertEqual(result, [2, 0, 1, 3])
 

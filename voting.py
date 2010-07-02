@@ -170,6 +170,11 @@ def plurality(votes, candidates):
 
 @export
 def borda(votes, candidates):
+    return []
+
+@export
+def modified_borda(votes, candidates):
+    # A version of the Borda count that penalizes incomplete ballots.
     pass
 
 @export
