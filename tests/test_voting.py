@@ -141,3 +141,59 @@ class EqualRanksTestCase(VotingTestCase):
         result = list(borda(self.votes, self.candidates))
         self.assertEqual(result, [2, 0, 1, 3])
 
+class MonotonicityTestCase(VotingTestCase):
+    # Increasing a candidate's rating should not hurt,
+    # and decreasing a rating should not help.
+    # http://en.wikipedia.org/wiki/Monotonicity_criterion
+    
+    candidates = set("ABC")
+    original = [
+        (["A", "B", "C"], 39),
+        (["B", "C", "A"], 35),
+        (["C", "A", "B"], 26),
+    ]
+    
+    later = [
+        (["A", "B", "C"], 49),
+        (["B", "C", "A"], 25),
+        (["C", "A", "B"], 26),
+    ]
+    
+    def test_irv(self):
+        # Instant Runoff Voting fails this criterion.
+        # This test just asserts that our implementation follows spec.
+        result = list(instantrunoff(self.original, self.candidates))
+        self.assertEqual(result, ["A", "B", "C"])
+        
+        result = list(instantrunoff(self.later, self.candidates))
+        self.assertEqual(result, ["C", "A", "B"])
+    
+    def test_plural(self):
+        # Plurality passes this criterion for the first place winner,
+        # but not for ordering the remaining candidates.
+        result = list(plurality(self.original, self.candidates))
+        self.assertEqual(result, ["A", "B", "C"])
+        
+        result = list(plurality(self.later, self.candidates))
+        self.assertEqual(result, ["A", "C", "B"])
+    
+    def test_pairs(self):
+        # Ranked pairs passes this criterion.
+        result = list(rankedpairs(self.original, self.candidates))
+        self.assertEqual(result, ["A", "B", "C"])
+        
+        result = list(rankedpairs(self.later, self.candidates))
+        self.assertEqual(result, ["A", "B", "C"])
+    
+    def test_borda(self):
+        # A misses the first election by a hair,
+        # but gets redeemed by the ten extra votes.
+        
+        # 104  109  87
+        result = list(borda(self.original, self.candidates))
+        self.assertEqual(result, ["B", "A", "C"])
+        
+        # 124  99  77
+        result = list(borda(self.later, self.candidates))
+        self.assertEqual(result, ["A", "B", "C"])
+
