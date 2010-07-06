@@ -1,41 +1,14 @@
 from tests import VotingTestCase
 from voting import *
 
-class TenesseeTestCase(VotingTestCase):
-    # Hypothetical election to select a state capital.
-    # http://en.wikipedia.org/wiki/Borda_count
+class MethodTestCase(VotingTestCase):
+    r'''Base class for testing the voting methods.
+        Each TestCase class presents a single election.
+        Subclasses need only override results, ballots, and probably candidates.
+        
+        This case is a very simple election that should be unambiguous.
+    '''#"""#'''
     
-    candidates = {
-        0: "Memphis",
-        1: "Nashville",
-        2: "Chattanooga",
-        3: "Knoxville",
-    }
-    
-    case = [
-        ([0, 1, 2, 3], 42),
-        ([1, 2, 3, 0], 26),
-        ([2, 3, 1, 0], 15),
-        ([3, 2, 1, 0], 17),
-    ]
-    
-    def test_pairs(self):
-        result = list(rankedpairs(self.case, self.candidates))
-        self.assertEqual(result, [1, 2, 3, 0])
-    
-    def test_irv(self):
-        result = list(instantrunoff(self.case, self.candidates))
-        self.assertEqual(result, [3, 0, 1, 2])
-    
-    def test_plural(self):
-        result = list(plurality(self.case, self.candidates))
-        self.assertEqual(result, [0, 1, 3, 2])
-    
-    def test_borda(self):
-        result = list(borda(self.case, self.candidates))
-        self.assertEqual(result, [1, 2, 0, 3])
-
-class UniversalTestCase(VotingTestCase):
     candidates = {
         0: "Best",
         1: "Maybe",
@@ -43,98 +16,103 @@ class UniversalTestCase(VotingTestCase):
         3: "Reviled",
     }
     
-    case = [
-        ([0, 1, 2, 3], 3),
-        ([0, 2, 1, 3], 2),
-    ]
-    
-    def test_pairs(self):
-        result = list(rankedpairs(self.case, self.candidates))
-        self.assertEqual(result, [0, 1, 2, 3])
-    
-    def test_irv(self):
-        result = list(instantrunoff(self.case, self.candidates))
-        self.assertEqual(result, [0, 1, 2, 3])
-    
-    def test_plural(self):
-        result = list(plurality(self.case, self.candidates))
-        self.assertEqual(result, [0, (1, 2, 3)])
-    
-    def test_borda(self):
-        result = list(borda(self.case, self.candidates))
-        self.assertEqual(result, [0, 1, 2, 3])
-
-class ReviledTestCase(VotingTestCase):
-    # A candidate ranked last by everyone should not win.
-    # This case is just a bit more complex than the Universal one.
-    candidates = {
-        0: "Best",
-        1: "Maybe",
-        2: "Possibly",
-        3: "Reviled",
-    }
-    
-    case = [
-        ([0, 1, 2, 3], 6),
-        ([0, 2, 1, 3], 5),
-        ([1, 2, 0, 3], 4),
-        ([2, 1, 0, 3], 3),
+    ballots = [
+        ([0, 1, 2, 3], 4),
+        ([0, 2, 1, 3], 3),
         ([1, 0, 2, 3], 2),
         ([2, 0, 1, 3], 1),
     ]
     
-    def test_pairs(self):
-        result = list(rankedpairs(self.case, self.candidates))
-        self.assertEqual(result, [0, 1, 2, 3])
+    results = {
+        rankedpairs: [0, 1, 2, 3],
+        instantrunoff: [0, 1, 2, 3],
+        plurality: [0, 1, 2, 3],
+        borda: [0, 1, 2, 3],
+    }
     
-    def test_irv(self):
-        result = list(instantrunoff(self.case, self.candidates))
-        self.assertEqual(result, [0, 1, 2, 3])
+    def check_method(self, method):
+        result = list(method(self.ballots, self.candidates))
+        self.assertEqual(result, self.results[method])
     
-    def test_plural(self):
-        result = list(plurality(self.case, self.candidates))
-        self.assertEqual(result, [0, 1, 2, 3])
+    def test_rankedpairs(self):
+        self.check_method(rankedpairs)
+    
+    def test_instantrunoff(self):
+        self.check_method(instantrunoff)
+    
+    def test_plurality(self):
+        self.check_method(plurality)
     
     def test_borda(self):
-        result = list(borda(self.case, self.candidates))
-        self.assertEqual(result, [0, 1, 2, 3])
+        self.check_method(borda)
 
-class MajorityTestCase(VotingTestCase):
-    # Majority criterion -- If there exists a majority that ranks a single
-    # candidate higher than all other candidates, does that candidate win?
-    # http://en.wikipedia.org/wiki/Borda_count
+class TenesseeTestCase(MethodTestCase):
+    r'''Hypothetical election to select a state capital.
+        Described on the Wikipedia pages for certain voting methods:
+            - http://en.wikipedia.org/wiki/Condorcet_method
+            - http://en.wikipedia.org/wiki/Ranked_Pairs
+            - http://en.wikipedia.org/wiki/Borda_count
+        
+        Each city votes to get the capital as close as possible,
+        with the strength of its respective population.
+        Nashville, as the centermost city, is the Condorcet winner,
+        but Knoxville and Memphis can be elected by other methods.
+    '''#"""#'''
+    
+    candidates = [
+        "Memphis",
+        "Nashville",
+        "Chattanooga",
+        "Knoxville",
+    ]
+    
+    ballots = [
+        (["Memphis", "Nashville", "Chattanooga", "Knoxville"], 42),
+        (["Nashville", "Chattanooga", "Knoxville", "Memphis"], 26),
+        (["Chattanooga", "Knoxville", "Nashville", "Memphis"], 15),
+        (["Knoxville", "Chattanooga", "Nashville", "Memphis"], 17),
+    ]
+    
+    results = {
+        rankedpairs: ["Nashville", "Chattanooga", "Knoxville", "Memphis"],
+        instantrunoff: ["Knoxville", "Memphis", "Nashville", "Chattanooga"],
+        plurality: ["Memphis", "Nashville", "Knoxville", "Chattanooga"],
+        borda: ["Nashville", "Chattanooga", "Memphis", "Knoxville"],
+    }
+
+class MajorityTestCase(MethodTestCase):
+    r'''Test case for the Majority Criterion.
+        http://en.wikipedia.org/wiki/Borda_count
+        
+        If a majority ranks a single candidate higher than all others,
+        that candidate should probably win.
+        However, Borda count can produce a different result.
+        In this case, the majority winner is hated by a large minority,
+        while Catherine is at least second place for everyone.
+    '''#"""#'''
     
     candidates = ["Andrew", "Brian", "Catherine", "David"]
     
-    case = [
+    ballots = [
         (["Andrew", "Catherine", "Brian", "David"], 51),
         (["Catherine", "Brian", "David", "Andrew"], 5),
         (["Brian", "Catherine", "David", "Andrew"], 23),
         (["David", "Catherine", "Brian", "Andrew"], 21),
     ]
     
-    def test_pairs(self):
-        result = list(rankedpairs(self.case, self.candidates))
-        self.assertEqual(result, ["Andrew", "Catherine", "Brian", "David"])
-    
-    def test_irv(self):
-        result = list(instantrunoff(self.case, self.candidates))
-        self.assertEqual(result, ["Andrew", "Catherine", "Brian", "David"])
-    
-    def test_plural(self):
-        result = list(plurality(self.case, self.candidates))
-        self.assertEqual(result, ["Andrew", "Brian", "David", "Catherine"])
-    
-    def test_borda(self):
-        # Andrew has a clear majority, but is hated by almost half.
-        # Catherine is at least second place for everybody.
-        result = list(borda(self.case, self.candidates))
-        self.assertEqual(result, ["Catherine", "Andrew", "Brian", "David"])
+    results = {
+        rankedpairs: ["Andrew", "Catherine", "Brian", "David"],
+        instantrunoff: ["Andrew", "Catherine", "Brian", "David"],
+        plurality: ["Andrew", "Brian", "David", "Catherine"],
+        borda: ["Catherine", "Andrew", "Brian", "David"],
+    }
 
-class EqualRanksTestCase(VotingTestCase):
-    # Voting methods should accept tuples to indicate equal ranks.
-    candidates = range(4)
-    votes = [
+class EqualRanksTestCase(MethodTestCase):
+    r'''Voting methods should allow equal rankings at any level.
+        The canonical versions of most voting methods don't, unfortunately.
+    '''#"""#'''
+    
+    ballots = [
         ([0, (1, 2), 3], 6),
         ([1, 2, (0, 3)], 4),
         ([2, 3, 1, 0], 3),
@@ -142,90 +120,54 @@ class EqualRanksTestCase(VotingTestCase):
         ([0, 2, (1, 3)], 1),
     ]
     
-    def test_pairs(self):
-        # 0/1:  +7 -7  =
-        # 0/2:  +9 -7  +
-        # 0/3:  +9 -3  +
-        # 1/2:  +6 -4  +
-        # 1/3: +12 -3  +
-        # 2/3: +16 -0  +
-        result = list(rankedpairs(self.votes, self.candidates))
-        self.assertEqual(result, [(0, 1), 2, 3])
-    
-    def test_irv(self):
-        # 0: 8, 1: 5, 2: 3, 3: 0
-        # 0: 8, 1: 8
-        result = list(instantrunoff(self.votes, self.candidates))
-        self.assertEqual(result, [(0, 1), 2, 3])
-    
-    def test_plural(self):
-        # 0: 8, 1: 5, 2: 3, 3: 0
-        result = list(plurality(self.votes, self.candidates))
-        self.assertEqual(result, [0, 1, 2, 3])
-    
-    def test_borda(self):
-        # 18   9     9  0
-        #  2  12     8  2
-        #  0   3     9  6
-        #  5   5     2  0
-        #  3   0.5   2  0.5
-        # 28  29.5  30  8.5
-        result = list(borda(self.votes, self.candidates))
-        self.assertEqual(result, [2, 1, 0, 3])
+    results = {
+        rankedpairs: [(0, 1), 2, 3],
+        instantrunoff: [(0, 1), 2, 3],
+        plurality: [0, 1, 2, 3],
+        borda: [2, 1, 0, 3],
+    }
 
-class MonotonicityTestCase(VotingTestCase):
-    # Increasing a candidate's rating should not hurt,
-    # and decreasing a rating should not help.
-    # http://en.wikipedia.org/wiki/Monotonicity_criterion
+class MonotonicityTestCase(MethodTestCase):
+    r'''First part of the test case for the Monotonicity Criterion:
+        http://en.wikipedia.org/wiki/Monotonicity_criterion
+        
+        This is the original ballot, with three strong candidates.
+    '''#"""#'''
     
-    candidates = set("ABC")
-    original = [
-        (["A", "B", "C"], 39),
-        (["B", "C", "A"], 35),
-        (["C", "A", "B"], 26),
+    candidates = ["Andrea", "Belinda", "Cynthia"]
+    
+    ballots = [
+        (["Andrea", "Belinda", "Cynthia"], 39),
+        (["Belinda", "Cynthia", "Andrea"], 35),
+        (["Cynthia", "Andrea", "Belinda"], 26),
     ]
     
-    later = [
-        (["A", "B", "C"], 49),
-        (["B", "C", "A"], 25),
-        (["C", "A", "B"], 26),
+    results = {
+        rankedpairs: ["Andrea", "Belinda", "Cynthia"],
+        instantrunoff: ["Andrea", "Belinda", "Cynthia"],
+        plurality: ["Andrea", "Belinda", "Cynthia"],
+        borda: ["Belinda", "Andrea", "Cynthia"],
+    }
+
+class Monotonicity2TestCase(MonotonicityTestCase):
+    r'''Second part of the test case for the Monotonicity Criterion:
+        http://en.wikipedia.org/wiki/Monotonicity_criterion
+        
+        Andrea has served well, impressing ten of Belinda's supporters to
+        change their votes.  That shouldn't hurt Andrea, nor should it help
+        Belinda or Cynthia, but it does under IRV.
+    '''#"""#'''
+    
+    ballots = [
+        (["Andrea", "Belinda", "Cynthia"], 49),
+        (["Belinda", "Cynthia", "Andrea"], 25),
+        (["Cynthia", "Andrea", "Belinda"], 26),
     ]
     
-    def test_irv(self):
-        # Instant Runoff Voting fails this criterion.
-        # This test just asserts that our implementation follows spec.
-        result = list(instantrunoff(self.original, self.candidates))
-        self.assertEqual(result, ["A", "B", "C"])
-        
-        result = list(instantrunoff(self.later, self.candidates))
-        self.assertEqual(result, ["C", "A", "B"])
-    
-    def test_plural(self):
-        # Plurality passes this criterion for the first place winner,
-        # but not for ordering the remaining candidates.
-        result = list(plurality(self.original, self.candidates))
-        self.assertEqual(result, ["A", "B", "C"])
-        
-        result = list(plurality(self.later, self.candidates))
-        self.assertEqual(result, ["A", "C", "B"])
-    
-    def test_pairs(self):
-        # Ranked pairs passes this criterion.
-        result = list(rankedpairs(self.original, self.candidates))
-        self.assertEqual(result, ["A", "B", "C"])
-        
-        result = list(rankedpairs(self.later, self.candidates))
-        self.assertEqual(result, ["A", "B", "C"])
-    
-    def test_borda(self):
-        # A misses the first election by a hair,
-        # but gets redeemed by the ten extra votes.
-        
-        # 104  109  87
-        result = list(borda(self.original, self.candidates))
-        self.assertEqual(result, ["B", "A", "C"])
-        
-        # 124  99  77
-        result = list(borda(self.later, self.candidates))
-        self.assertEqual(result, ["A", "B", "C"])
+    results = {
+        rankedpairs: ["Andrea", "Belinda", "Cynthia"],
+        instantrunoff: ["Cynthia", "Andrea", "Belinda"],
+        plurality: ["Andrea", "Cynthia", "Belinda"],
+        borda: ["Andrea", "Belinda", "Cynthia"],
+    }
 
