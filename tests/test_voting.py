@@ -32,7 +32,7 @@ class MethodTestCase(VotingTestCase):
     
     def check_method(self, method):
         result = list(method(self.ballots, self.candidates))
-        self.assertEqual(result, self.results[method])
+        self.assertEqual(self.results[method], result)
     
     def test_rankedpairs(self):
         self.check_method(rankedpairs)
@@ -169,5 +169,141 @@ class Monotonicity2TestCase(MonotonicityTestCase):
         instantrunoff: ["Cynthia", "Andrea", "Belinda"],
         plurality: ["Andrea", "Cynthia", "Belinda"],
         borda: ["Andrea", "Belinda", "Cynthia"],
+    }
+
+class PluralityTestCase(MethodTestCase):
+    r'''Demonstration of severe vote-splitting.
+        http://fc.antioch.edu/~james_green-armytage/vm/survey.htm#plurality
+        
+        Plurality is the only method that would elect a far-right candidate
+        when over 80% of the voters prefer a leftist candidate.
+        IRV places the right-winger higher in the rankings that it should be,
+        but even it doesn't float the loser all the way to the top.
+    '''#"""#'''
+    
+    candidates = range(9)
+    
+    ballots = [
+        ([0, (1, 2, 3, 4, 5, 6, 7, 8)], 20),
+        ([1, (2, 3, 4, 5, 6, 7, 8), 0], 13),
+        ([2, (1, 3, 4, 5, 6, 7, 8), 0], 11),
+        ([3, (1, 2, 4, 5, 6, 7, 8), 0], 10),
+        ([4, (1, 2, 3, 5, 6, 7, 8), 0], 10),
+        ([5, (1, 2, 3, 4, 6, 7, 8), 0], 10),
+        ([6, (1, 2, 3, 4, 5, 7, 8), 0], 10),
+        ([7, (1, 2, 3, 4, 5, 6, 8), 0], 9),
+        ([8, (1, 2, 3, 4, 5, 6, 7), 0], 7),
+    ]
+    
+    results = {
+        rankedpairs: [1, 2, (3, 4, 5, 6), 7, 8, 0],
+        instantrunoff: [1, 2, 0, (3, 4, 5, 6), 7, 8],
+        plurality: [0, 1, 2, (3, 4, 5, 6), 7, 8],
+        borda: [1, 2, (3, 4, 5, 6), 7, 8, 0],
+    }
+
+class RunoffTestCase(MethodTestCase):
+    r'''Demonstration of Instant runoff voting.
+        http://fc.antioch.edu/~james_green-armytage/vm/survey.htm#irv
+        
+        The Far Left candidate splits the leftist vote under plurality,
+        but contributes to the Left win under other systems.
+        Whether Right or Far Left should be second is up for debate.
+    '''#"""#'''
+    
+    candidates = ["Far Left", "Left", "Right", "Far Right"]
+    
+    ballots = [
+        (["Far Right", "Right", "Left", "Far Left"], 5),
+        (["Right", "Far Right", "Left", "Far Left"], 40),
+        (["Left", "Far Left", "Right", "Far Right"], 36),
+        (["Far Left", "Left", "Right", "Far Right"], 19),
+    ]
+    
+    results = {
+        rankedpairs: ["Left", "Far Left", "Right", "Far Right"],
+        instantrunoff: ["Left", "Right", "Far Left", "Far Right"],
+        plurality: ["Right", "Left", "Far Left", "Far Right"],
+        borda: ["Left", "Right", "Far Left", "Far Right"],
+    }
+
+class CondorcetTestCase(MethodTestCase):
+    r'''Demonstration of the Condorcet principle.
+        http://fc.antioch.edu/~james_green-armytage/vm/survey.htm#condorcet
+        
+        The Center candidate doesn't seem like a strong contender,
+        but is a decent compromise between the two polarized sides.
+        It would beat either one in a head-to-head battle.
+        Unfortunately, neither Plurality nor IRV see that.
+    '''#"""#'''
+    
+    candidates = ["Left", "Center", "Right"]
+    
+    ballots = [
+        (["Left", "Center", "Right"], 33),
+        (["Center", "Left", "Right"], 16),
+        (["Center", "Right", "Left"], 16),
+        (["Right", "Center", "Left"], 35),
+    ]
+    
+    results = {
+        rankedpairs: ["Center", "Right", "Left"],
+        instantrunoff: ["Right", "Left", "Center"],
+        plurality: ["Right", "Left", "Center"],
+        borda: ["Center", "Right", "Left"],
+    }
+
+class MinimaxTestCase(MethodTestCase):
+    r'''Demonstration of the Minimax resolution of non-Condorcet elections.
+        http://fc.antioch.edu/~james_green-armytage/vm/survey.htm#minimax
+        
+        Imaginary election slightly based on the 2000 U.S. presidential candidates.
+        The truncated ballots in the example have been expanded.
+    '''#"""#'''
+    
+    candidates = ["Bush", "Gore", "Nader"]
+    
+    ballots = [
+        (["Bush", ("Gore", "Nader")], 45),
+        (["Gore", ("Bush", "Nader")], 12),
+        (["Gore", "Nader", "Bush"], 14),
+        (["Nader", "Gore", "Bush"], 29),
+    ]
+    
+    results = {
+        rankedpairs: ["Gore", "Bush", "Nader"],
+        instantrunoff: ["Bush", "Nader", "Gore"],
+        plurality: ["Bush", "Nader", "Gore"],
+        borda: ["Gore", "Nader", "Bush"],
+        minimax: ["Gore", "Bush", "Nader"],
+    }
+
+class SmithSetTestCase(MethodTestCase):
+    r'''Demonstration of the Minimax failure mode.
+        http://fc.antioch.edu/~james_green-armytage/vm/survey.htm#smith
+        
+        Candidate D is a Condorcet loser, so should not be able to win.
+    '''#"""#'''
+    
+    candidates = "ABCD"
+    
+    ballots = [
+        ("ABCD", 6),
+        ("DCAB", 6),
+        ("BCAD", 6),
+        ("DABC", 5),
+        ("CABD", 4),
+        ("DBCA", 4),
+        ("BCDA", 2),
+        ("ACBD", 2),
+        ("ACDB", 1),
+    ]
+    
+    results = {
+        rankedpairs: ["A", "B", "C", "D"],
+        instantrunoff: ["A", "D", "B", "C"],
+        plurality: ["D", "A", "B", "C"],
+        borda: ["A", "C", "B", "D"],
+        minimax: ["D", "A", "B", "C"],
     }
 
