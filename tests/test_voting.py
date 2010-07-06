@@ -28,6 +28,7 @@ class MethodTestCase(VotingTestCase):
         instantrunoff: [0, 1, 2, 3],
         plurality: [0, 1, 2, 3],
         borda: [0, 1, 2, 3],
+        minimax: [0, 1, 2, 3],
     }
     
     def check_method(self, method):
@@ -45,6 +46,9 @@ class MethodTestCase(VotingTestCase):
     
     def test_borda(self):
         self.check_method(borda)
+    
+    def test_minimax(self):
+        self.check_method(minimax)
 
 class TenesseeTestCase(MethodTestCase):
     r'''Hypothetical election to select a state capital.
@@ -78,6 +82,7 @@ class TenesseeTestCase(MethodTestCase):
         instantrunoff: ["Knoxville", "Memphis", "Nashville", "Chattanooga"],
         plurality: ["Memphis", "Nashville", "Knoxville", "Chattanooga"],
         borda: ["Nashville", "Chattanooga", "Memphis", "Knoxville"],
+        minimax: ["Nashville", "Chattanooga", "Knoxville", "Memphis"],
     }
 
 class MajorityTestCase(MethodTestCase):
@@ -105,6 +110,7 @@ class MajorityTestCase(MethodTestCase):
         instantrunoff: ["Andrew", "Catherine", "Brian", "David"],
         plurality: ["Andrew", "Brian", "David", "Catherine"],
         borda: ["Catherine", "Andrew", "Brian", "David"],
+        minimax: ["Andrew", "Catherine", "Brian", "David"],
     }
 
 class EqualRanksTestCase(MethodTestCase):
@@ -125,6 +131,7 @@ class EqualRanksTestCase(MethodTestCase):
         instantrunoff: [(0, 1), 2, 3],
         plurality: [0, 1, 2, 3],
         borda: [2, 1, 0, 3],
+        minimax: [(0, 1), 2, 3],
     }
 
 class MonotonicityTestCase(MethodTestCase):
@@ -147,6 +154,7 @@ class MonotonicityTestCase(MethodTestCase):
         instantrunoff: ["Andrea", "Belinda", "Cynthia"],
         plurality: ["Andrea", "Belinda", "Cynthia"],
         borda: ["Belinda", "Andrea", "Cynthia"],
+        minimax: ["Andrea", "Belinda", "Cynthia"],
     }
 
 class Monotonicity2TestCase(MonotonicityTestCase):
@@ -156,6 +164,7 @@ class Monotonicity2TestCase(MonotonicityTestCase):
         Andrea has served well, impressing ten of Belinda's supporters to
         change their votes.  That shouldn't hurt Andrea, nor should it help
         Belinda or Cynthia, but it does under IRV.
+        Plurality also presents an odd change.
     '''#"""#'''
     
     ballots = [
@@ -169,6 +178,7 @@ class Monotonicity2TestCase(MonotonicityTestCase):
         instantrunoff: ["Cynthia", "Andrea", "Belinda"],
         plurality: ["Andrea", "Cynthia", "Belinda"],
         borda: ["Andrea", "Belinda", "Cynthia"],
+        minimax: ["Andrea", "Belinda", "Cynthia"],
     }
 
 class PluralityTestCase(MethodTestCase):
@@ -200,6 +210,7 @@ class PluralityTestCase(MethodTestCase):
         instantrunoff: [1, 2, 0, (3, 4, 5, 6), 7, 8],
         plurality: [0, 1, 2, (3, 4, 5, 6), 7, 8],
         borda: [1, 2, (3, 4, 5, 6), 7, 8, 0],
+        minimax: [1, 2, (3, 4, 5, 6), 7, 8, 0],
     }
 
 class RunoffTestCase(MethodTestCase):
@@ -225,6 +236,7 @@ class RunoffTestCase(MethodTestCase):
         instantrunoff: ["Left", "Right", "Far Left", "Far Right"],
         plurality: ["Right", "Left", "Far Left", "Far Right"],
         borda: ["Left", "Right", "Far Left", "Far Right"],
+        minimax: ["Left", "Far Left", "Right", "Far Right"],
     }
 
 class CondorcetTestCase(MethodTestCase):
@@ -251,6 +263,7 @@ class CondorcetTestCase(MethodTestCase):
         instantrunoff: ["Right", "Left", "Center"],
         plurality: ["Right", "Left", "Center"],
         borda: ["Center", "Right", "Left"],
+        minimax: ["Center", "Right", "Left"],
     }
 
 class MinimaxTestCase(MethodTestCase):
