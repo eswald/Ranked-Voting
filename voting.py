@@ -31,8 +31,8 @@ def unwind(ranks):
             yield set([row])
 
 class Graph(object):
-    r'''Acyclic graph structure.
-        Designed for use by the ranked pairs voting algorithm.
+    r'''Basic graph structure.
+        Designed for use by voting algorithms.
     '''#"""#'''
     
     def __init__(self, vertices):
@@ -40,10 +40,17 @@ class Graph(object):
             `vertices` is a sequence of distinct hashable objects.
         '''#"""#'''
         # Store the inbound connections in a dictionary.
-        # Outbound would make remove() easier, but roots() harder.
+        # Outbound would make remove_vertex() easier, but roots() harder.
         self.vertices = dict((v, set()) for v in vertices)
     
     def edge(self, source, sink):
+        r'''Create an edge from the source to the sink.
+            This method provides no protections against cycles.
+        '''#"""#'''
+        self.vertices[sink].add(source)
+        return True
+    
+    def acyclic_edge(self, source, sink):
         r'''Create an edge from the source to the sink,
             as long as the graph remains acyclic.
             `source` and `sink` must be vertices.
@@ -58,18 +65,31 @@ class Graph(object):
         self.vertices[sink].add(source)
         return True
     
+    def edges(self):
+        r'''Collect all edges in the graph.
+        '''#"""#'''
+        for sink in self.vertices:
+            for source in self.vertices[sink]:
+                yield source, sink
+    
     def roots(self):
         r'''Collect the vertices with no inbound edges.
             These are the roots of the tree, or the best choices.
         '''#"""#'''
         return [key for key in self.vertices if not self.vertices[key]]
     
-    def remove(self, vertex):
+    def remove_vertex(self, vertex):
         r'''Remove a vertex from the graph.
+            Also removes any edges connected to that vertex.
         '''#"""#'''
         del self.vertices[vertex]
         for inbound in self.vertices.values():
             inbound.discard(vertex)
+    
+    def remove_edge(self, source, sink):
+        r'''Remove an edge from the graph.
+        '''#"""#'''
+        self.vertices[sink].remove(source)
     
     def __nonzero__(self):
         r'''Truth value for the graph.
@@ -100,13 +120,13 @@ def rankedpairs(votes, candidates):
     graph = Graph(candidates)
     for major, minor, better, worse in reversed(majorities):
         if major > minor:
-            result = graph.edge(better, worse)
+            result = graph.acyclic_edge(better, worse)
     
     while graph:
         winners = graph.roots()
         yield maybe_tuple(winners)
         for item in winners:
-            graph.remove(item)
+            graph.remove_vertex(item)
 
 @export
 def instantrunoff(votes, candidates):
@@ -204,7 +224,39 @@ def bucklin(votes, candidates):
 
 @export
 def minimax(votes, candidates):
-    pass
+    # Minimax / Successive reversal / Simpson method.
+    # Using rankings, select unbeaten candidates.
+    # If there aren't any, drop the weakest wins.
+    comparisons = defaultdict(int)
+    for ranks, count in votes:
+        above = set()
+        for row in unwind(ranks):
+            for candidate in row:
+                for former in above:
+                    comparisons[former, candidate] += count
+            above.update(row)
+    
+    # This seemingly-useless conversion avoids an error
+    # caused by adding new items during iteration.
+    comparisons = dict(comparisons)
+    graph = Graph(candidates)
+    for a, b in comparisons:
+        major = comparisons[a, b]
+        minor = comparisons.get((b, a), 0)
+        if major > minor:
+            result = graph.edge(a, b)
+    
+    while graph:
+        winners = graph.roots()
+        if winners:
+            yield maybe_tuple(winners)
+            for item in winners:
+                graph.remove_vertex(item)
+        else:
+            # This part could be optimized better.
+            strength, sink, source = min((comparisons[a, b], a, b)
+                for a, b in graph.edges())
+            graph.remove_edge(sink, source)
 
 @export
 def schulze(votes, candidates):
