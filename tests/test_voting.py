@@ -285,6 +285,7 @@ class MinimaxTestCase(MethodTestCase):
     
     results = {
         rankedpairs: ["Gore", "Bush", "Nader"],
+        beatpath: ["Gore", "Bush", "Nader"],
         instantrunoff: ["Bush", "Nader", "Gore"],
         plurality: ["Bush", "Nader", "Gore"],
         borda: ["Gore", "Nader", "Bush"],
@@ -314,9 +315,107 @@ class SmithSetTestCase(MethodTestCase):
     
     results = {
         rankedpairs: ["A", "B", "C", "D"],
+        beatpath: ["A", "B", "C", "D"],
         instantrunoff: ["A", "D", "B", "C"],
         plurality: ["D", "A", "B", "C"],
         borda: ["A", "C", "B", "D"],
         minimax: ["D", "A", "B", "C"],
+    }
+
+class ClonesTestCase(MethodTestCase):
+    r'''Demonstration of the cloneproof Schwartz sequential dropping procdedure.
+        http://fc.antioch.edu/~james_green-armytage/vm/survey.htm#beatpath
+        
+        Candidates R, S, and T are clones in a cycle, each tied with A.
+        Ideally, A should tie with one of the clones.
+    '''#"""#'''
+    
+    candidates = "ARST"
+    
+    ballots = [
+        ("ARST", 3),
+        ("ATRS", 2),
+        ("ASTR", 1),
+        ("STRA", 3),
+        ("RSTA", 2),
+        ("TRSA", 1),
+    ]
+    
+    results = {
+        rankedpairs: [("A", "R"), "S", "T"],
+        beatpath: [("A", "R"), "S", "T"],
+        instantrunoff: ["A", ("R", "S"), "T"],
+        plurality: ["A", "S", "R", "T"],
+        borda: [("R", "S"), "A", "T"],
+        minimax: ["A", "R", "S", "T"],
+    }
+
+class BeatpathTestCase(MethodTestCase):
+    r'''Demonstration of the difference between Beatpath and Ranked Pairs
+        http://fc.antioch.edu/~james_green-armytage/vm/survey.htm#ranked_pairs
+        
+        In this case, the beatpath winner (A) would lose to the ranked pairs
+        winner (B) in a head-to-head competition, but that loss is the weakest
+        link in the B-A-D cycle.
+    '''#"""#'''
+    
+    candidates = "ABCD"
+    
+    ballots = [
+        ("BACD", 7),
+        ("CDAB", 5),
+        ("DBAC", 5),
+        ("CADB", 4),
+        ("BCAD", 4),
+        ("DABC", 2),
+        ("ADBC", 2),
+        ("ACDB", 1),
+    ]
+    
+    results = {
+        rankedpairs: ["B", "A", "C", "D"],
+        beatpath: ["A", "B", "C", "D"],
+        instantrunoff: ["B", "C", "D", "A"],
+        plurality: ["B", "C", "D", "A"],
+        borda: ["A", "B", "C", "D"],
+        minimax: ["A", "B", "C", "D"],
+    }
+
+class PentagonTestCase(MethodTestCase):
+    r'''Demonstration of the difference between Beatpath and Ranked Pairs
+        http://fc.antioch.edu/~james_green-armytage/vm/survey.htm#ranked_pairs
+        
+        In this case, the ranked pairs winner (A) would lose to the beatpath
+        winner (B) in a head-to-head competition, but that loss is the weakest
+        link in the B-E-A cycle.
+    '''#"""#'''
+    
+    candidates = "ABCDE"
+    
+    ballots = [
+        ("BDEAC", 8),
+        ("CABED", 8),
+        ("EBADC", 8),
+        ("EACBD", 5),
+        ("DCBEA", 5),
+        ("DACBE", 4),
+        ("DCABE", 4),
+        ("ABCDE", 3),
+        ("EADCB", 3),
+        ("CEBDA", 2),
+        ("ABDCE", 2),
+        ("DECAB", 1),
+        ("BADCE", 1),
+        ("ADCBE", 1),
+        ("ECBAD", 1),
+    ]
+    
+    results = {
+        rankedpairs: ["B", "E", "A", "D", "C"],
+        beatpath: ["A", "B", "D", "C", "E"],
+        instantrunoff: ["B", "E", "D", "C", "A"],
+        plurality: ["E", "D", "C", "B", "A"],
+        borda: [("A", "B"), "D", "E", "C"],
+        minimax: ["A", "B", ("D", "E"), "C"],
     }
 
