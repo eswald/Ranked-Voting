@@ -78,6 +78,21 @@ class Graph(object):
         '''#"""#'''
         return [key for key in self.vertices if not self.vertices[key]]
     
+    def paths(self, source, sink):
+        r'''Collect all paths from the source to the sink.
+            Tends to yield shorter paths first.
+        '''#"""#'''
+        paths = [([sink], self.vertices[sink])]
+        while paths:
+            path, steps = paths.pop(0)
+            for item in steps:
+                if item == source:
+                    yield [item] + path
+                elif item not in path:
+                    inbound = self.vertices[item]
+                    if inbound:
+                        paths.append(([item] + path, inbound))
+    
     def remove_vertex(self, vertex):
         r'''Remove a vertex from the graph.
             Also removes any edges connected to that vertex.
@@ -259,9 +274,76 @@ def minimax(votes, candidates):
             graph.remove_edge(sink, source)
 
 @export
-def schulze(votes, candidates):
-    pass
+def beatpath(votes, candidates):
+    # Schulze method, equivalent to Cloneproof Schwartz Sequential Dropping.
+    comparisons = defaultdict(int)
+    for ranks, count in votes:
+        above = set()
+        for row in unwind(ranks):
+            for candidate in row:
+                for former in above:
+                    comparisons[former, candidate] += count
+            above.update(row)
+    
+    # This seemingly-useless conversion avoids an error
+    # caused by adding new items during iteration.
+    comparisons = dict(comparisons)
+    graph = Graph(candidates)
+    for a, b in comparisons:
+        major = comparisons[a, b]
+        minor = comparisons.get((b, a), 0)
+        if major > minor:
+            result = graph.edge(a, b)
+    
+    def path_steps(path):
+        sequence = iter(path)
+        prev = next(sequence)
+        for item in sequence:
+            yield prev, item
+            prev = item
+    
+    def beat_strength(source, sink):
+        # max() doesn't like empty iterables.
+        strength = 0
+        for path in graph.paths(source, sink):
+            path_strength = min(comparisons.get(step, 0)
+                for step in path_steps(path))
+            if path_strength > strength:
+                strength = path_strength
+        return strength
+    
+    def pairs(sequence):
+        r'''Yield each pair of the set exactly once.
+            For example, if "A" and "B" are both in the set,
+            yield either ("A", "B") or ("B", "A"), but not both.
+        '''#"""#'''
+        items = list(sequence)
+        for b in xrange(1, len(items)):
+            for a in xrange(0, b):
+                yield items[a], items[b]
+    
+    final = Graph(candidates)
+    for source, sink in pairs(candidates):
+        major = beat_strength(sink, source)
+        minor = beat_strength(source, sink)
+        if major > minor:
+            final.edge(sink, source)
+        elif minor > major:
+            final.edge(source, sink)
+    
+    while final:
+        winners = final.roots()
+        yield maybe_tuple(winners)
+        for item in winners:
+            final.remove_vertex(item)
 
 @export
 def kemeny(votes, candidates):
     pass
+
+@export
+def river(votes, candidates):
+    # A compromize between Beatpath and Ranked Pairs
+    # http://web.archive.org/web/20071031155527/http://lists.electorama.com/pipermail/election-methods-electorama.com/2004-October/013971.html
+    pass
+

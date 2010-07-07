@@ -25,6 +25,7 @@ class MethodTestCase(VotingTestCase):
     
     results = {
         rankedpairs: [0, 1, 2, 3],
+        beatpath: [0, 1, 2, 3],
         instantrunoff: [0, 1, 2, 3],
         plurality: [0, 1, 2, 3],
         borda: [0, 1, 2, 3],
@@ -37,6 +38,9 @@ class MethodTestCase(VotingTestCase):
     
     def test_rankedpairs(self):
         self.check_method(rankedpairs)
+    
+    def test_beatpath(self):
+        self.check_method(beatpath)
     
     def test_instantrunoff(self):
         self.check_method(instantrunoff)
@@ -79,6 +83,7 @@ class TenesseeTestCase(MethodTestCase):
     
     results = {
         rankedpairs: ["Nashville", "Chattanooga", "Knoxville", "Memphis"],
+        beatpath: ["Nashville", "Chattanooga", "Knoxville", "Memphis"],
         instantrunoff: ["Knoxville", "Memphis", "Nashville", "Chattanooga"],
         plurality: ["Memphis", "Nashville", "Knoxville", "Chattanooga"],
         borda: ["Nashville", "Chattanooga", "Memphis", "Knoxville"],
@@ -107,6 +112,7 @@ class MajorityTestCase(MethodTestCase):
     
     results = {
         rankedpairs: ["Andrew", "Catherine", "Brian", "David"],
+        beatpath: ["Andrew", "Catherine", "Brian", "David"],
         instantrunoff: ["Andrew", "Catherine", "Brian", "David"],
         plurality: ["Andrew", "Brian", "David", "Catherine"],
         borda: ["Catherine", "Andrew", "Brian", "David"],
@@ -128,6 +134,7 @@ class EqualRanksTestCase(MethodTestCase):
     
     results = {
         rankedpairs: [(0, 1), 2, 3],
+        beatpath: [(0, 1), 2, 3],
         instantrunoff: [(0, 1), 2, 3],
         plurality: [0, 1, 2, 3],
         borda: [2, 1, 0, 3],
@@ -151,6 +158,7 @@ class MonotonicityTestCase(MethodTestCase):
     
     results = {
         rankedpairs: ["Andrea", "Belinda", "Cynthia"],
+        beatpath: ["Andrea", "Belinda", "Cynthia"],
         instantrunoff: ["Andrea", "Belinda", "Cynthia"],
         plurality: ["Andrea", "Belinda", "Cynthia"],
         borda: ["Belinda", "Andrea", "Cynthia"],
@@ -175,6 +183,7 @@ class Monotonicity2TestCase(MonotonicityTestCase):
     
     results = {
         rankedpairs: ["Andrea", "Belinda", "Cynthia"],
+        beatpath: ["Andrea", "Belinda", "Cynthia"],
         instantrunoff: ["Cynthia", "Andrea", "Belinda"],
         plurality: ["Andrea", "Cynthia", "Belinda"],
         borda: ["Andrea", "Belinda", "Cynthia"],
@@ -207,6 +216,7 @@ class PluralityTestCase(MethodTestCase):
     
     results = {
         rankedpairs: [1, 2, (3, 4, 5, 6), 7, 8, 0],
+        beatpath: [1, 2, (3, 4, 5, 6), 7, 8, 0],
         instantrunoff: [1, 2, 0, (3, 4, 5, 6), 7, 8],
         plurality: [0, 1, 2, (3, 4, 5, 6), 7, 8],
         borda: [1, 2, (3, 4, 5, 6), 7, 8, 0],
@@ -233,6 +243,7 @@ class RunoffTestCase(MethodTestCase):
     
     results = {
         rankedpairs: ["Left", "Far Left", "Right", "Far Right"],
+        beatpath: ["Left", "Far Left", "Right", "Far Right"],
         instantrunoff: ["Left", "Right", "Far Left", "Far Right"],
         plurality: ["Right", "Left", "Far Left", "Far Right"],
         borda: ["Left", "Right", "Far Left", "Far Right"],
@@ -260,6 +271,7 @@ class CondorcetTestCase(MethodTestCase):
     
     results = {
         rankedpairs: ["Center", "Right", "Left"],
+        beatpath: ["Center", "Right", "Left"],
         instantrunoff: ["Right", "Left", "Center"],
         plurality: ["Right", "Left", "Center"],
         borda: ["Center", "Right", "Left"],
