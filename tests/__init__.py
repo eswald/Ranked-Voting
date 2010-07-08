@@ -12,7 +12,12 @@ except ImportError:
 def fixpaths():
     import sys
     from os.path import abspath, dirname, join
+    from warnings import filterwarnings
     
+    # Disable the DeprecationWarnings for use of the md5 and sha modules.
+    filterwarnings("ignore", category=DeprecationWarning)
+    
+    # Add AppEngine-specific paths to the import path.
     root_path = dirname(dirname(abspath((__file__))))
     google_path = join(dirname(root_path), "google_appengine")
     sys.path.insert(0, join(google_path, "lib", "yaml", "lib"))
@@ -27,7 +32,12 @@ root_path = fixpaths()
 
 def setup():
     from google.appengine.tools import dev_appserver
-    from google.appengine.tools.dev_appserver_main import *
+    from google.appengine.tools.dev_appserver_main import (
+        ARG_CLEAR_DATASTORE,
+        ARG_LOG_LEVEL,
+        DEFAULT_ARGS,
+        logging,
+    )
     
     option_dict = DEFAULT_ARGS.copy()
     option_dict[ARG_CLEAR_DATASTORE] = True
