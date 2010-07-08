@@ -218,32 +218,29 @@ def plurality(votes, candidates):
 @export
 def borda(votes, candidates):
     # Borda Count method.
-    # Unfortunately, this one penalizes unranked candidates.
-    topval = len(candidates)
+    # The over/under count system makes each ballot zero-sum, which allows
+    # incomplete ballots to have less impact on unranked candidates.
     ratings = dict.fromkeys(candidates, 0)
     for ranks, count in votes:
-        value = topval
+        # First, subtract points for each candidate ranked higher.
+        seen = 0
         for row in unwind(ranks):
-            # Todo: Simplify this calculation.
-            thisval = 0
-            for c in row:
-                value -= 1
-                thisval += value
-            thisval *= count
-            thisval /= len(row)
-            
+            value = count * seen
+            seen += len(row)
             for candidate in row:
-                ratings[candidate] += thisval
+                ratings[candidate] -= value
+        
+        # Second, add points for each candidate ranked lower.
+        for row in unwind(ranks):
+            seen -= len(row)
+            value = count * seen
+            for candidate in row:
+                ratings[candidate] += value
     
-    counts = defaultdict(list)
+    counts = defaultdict(set)
     for key in ratings:
-        counts[ratings[key]].append(key)
-    return [maybe_tuple(counts[total]) for total in reversed(sorted(counts))]
-
-@export
-def modified_borda(votes, candidates):
-    # A version of the Borda count that penalizes incomplete ballots.
-    pass
+        counts[ratings[key]].add(key)
+    return [maybe_tuple(counts[total]) for total in sorted(counts, reverse=True)]
 
 @export
 def bucklin(votes, candidates):
