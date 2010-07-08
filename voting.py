@@ -338,10 +338,6 @@ def beatpath(votes, candidates):
             final.remove_vertex(item)
 
 @export
-def kemeny(votes, candidates):
-    pass
-
-@export
 def river(votes, candidates):
     # A compromize between Beatpath and Ranked Pairs
     # http://web.archive.org/web/20071031155527/http://lists.electorama.com/pipermail/election-methods-electorama.com/2004-October/013971.html
