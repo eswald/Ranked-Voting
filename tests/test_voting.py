@@ -28,6 +28,7 @@ class MethodTestCase(VotingTestCase):
         beatpath: [0, 1, 2, 3],
         instantrunoff: [0, 1, 2, 3],
         plurality: [0, 1, 2, 3],
+        bucklin: [0, 1, 2, 3],
         borda: [0, 1, 2, 3],
         minimax: [0, 1, 2, 3],
     }
@@ -48,6 +49,9 @@ class MethodTestCase(VotingTestCase):
     def test_plurality(self):
         self.check_method(plurality)
     
+    def test_bucklin(self):
+        self.check_method(bucklin)
+    
     def test_borda(self):
         self.check_method(borda)
     
@@ -60,6 +64,7 @@ class TenesseeTestCase(MethodTestCase):
             - http://en.wikipedia.org/wiki/Condorcet_method
             - http://en.wikipedia.org/wiki/Ranked_Pairs
             - http://en.wikipedia.org/wiki/Borda_count
+            - http://en.wikipedia.org/wiki/Bucklin_voting
         
         Each city votes to get the capital as close as possible,
         with the strength of its respective population.
@@ -86,6 +91,7 @@ class TenesseeTestCase(MethodTestCase):
         beatpath: ["Nashville", "Chattanooga", "Knoxville", "Memphis"],
         instantrunoff: ["Knoxville", "Memphis", "Nashville", "Chattanooga"],
         plurality: ["Memphis", "Nashville", "Knoxville", "Chattanooga"],
+        bucklin: ["Nashville", "Chattanooga", "Memphis", "Knoxville"],
         borda: ["Nashville", "Chattanooga", "Memphis", "Knoxville"],
         minimax: ["Nashville", "Chattanooga", "Knoxville", "Memphis"],
     }
@@ -115,6 +121,7 @@ class MajorityTestCase(MethodTestCase):
         beatpath: ["Andrew", "Catherine", "Brian", "David"],
         instantrunoff: ["Andrew", "Catherine", "Brian", "David"],
         plurality: ["Andrew", "Brian", "David", "Catherine"],
+        bucklin: ["Andrew", "Brian", "David", "Catherine"],
         borda: ["Catherine", "Andrew", "Brian", "David"],
         minimax: ["Andrew", "Catherine", "Brian", "David"],
     }
@@ -137,6 +144,7 @@ class EqualRanksTestCase(MethodTestCase):
         beatpath: [(0, 1), 2, 3],
         instantrunoff: [(0, 1), 2, 3],
         plurality: [0, 1, 2, 3],
+        bucklin: [2, (0, 1), 3],
         borda: [2, 1, 0, 3],
         minimax: [(0, 1), 2, 3],
     }
@@ -161,6 +169,7 @@ class MonotonicityTestCase(MethodTestCase):
         beatpath: ["Andrea", "Belinda", "Cynthia"],
         instantrunoff: ["Andrea", "Belinda", "Cynthia"],
         plurality: ["Andrea", "Belinda", "Cynthia"],
+        bucklin: ["Belinda", "Andrea", "Cynthia"],
         borda: ["Belinda", "Andrea", "Cynthia"],
         minimax: ["Andrea", "Belinda", "Cynthia"],
     }
@@ -186,6 +195,7 @@ class Monotonicity2TestCase(MonotonicityTestCase):
         beatpath: ["Andrea", "Belinda", "Cynthia"],
         instantrunoff: ["Cynthia", "Andrea", "Belinda"],
         plurality: ["Andrea", "Cynthia", "Belinda"],
+        bucklin: ["Andrea", "Belinda", "Cynthia"],
         borda: ["Andrea", "Belinda", "Cynthia"],
         minimax: ["Andrea", "Belinda", "Cynthia"],
     }
@@ -219,6 +229,7 @@ class PluralityTestCase(MethodTestCase):
         beatpath: [1, 2, (3, 4, 5, 6), 7, 8, 0],
         instantrunoff: [1, 2, 0, (3, 4, 5, 6), 7, 8],
         plurality: [0, 1, 2, (3, 4, 5, 6), 7, 8],
+        bucklin: [1, 2, (3, 4, 5, 6), 7, 8, 0],
         borda: [1, 2, (3, 4, 5, 6), 7, 8, 0],
         minimax: [1, 2, (3, 4, 5, 6), 7, 8, 0],
     }
@@ -246,6 +257,7 @@ class RunoffTestCase(MethodTestCase):
         beatpath: ["Left", "Far Left", "Right", "Far Right"],
         instantrunoff: ["Left", "Right", "Far Left", "Far Right"],
         plurality: ["Right", "Left", "Far Left", "Far Right"],
+        bucklin: [("Far Left", "Left"), ("Far Right", "Right")],
         borda: ["Left", "Right", "Far Left", "Far Right"],
         minimax: ["Left", "Far Left", "Right", "Far Right"],
     }
@@ -274,6 +286,7 @@ class CondorcetTestCase(MethodTestCase):
         beatpath: ["Center", "Right", "Left"],
         instantrunoff: ["Right", "Left", "Center"],
         plurality: ["Right", "Left", "Center"],
+        bucklin: ["Center", "Right", "Left"],
         borda: ["Center", "Right", "Left"],
         minimax: ["Center", "Right", "Left"],
     }
@@ -300,6 +313,7 @@ class MinimaxTestCase(MethodTestCase):
         beatpath: ["Gore", "Bush", "Nader"],
         instantrunoff: ["Bush", "Nader", "Gore"],
         plurality: ["Bush", "Nader", "Gore"],
+        bucklin: ["Gore", "Nader", "Bush"],
         borda: ["Gore", "Nader", "Bush"],
         minimax: ["Gore", "Bush", "Nader"],
     }
@@ -330,6 +344,7 @@ class SmithSetTestCase(MethodTestCase):
         beatpath: ["A", "B", "C", "D"],
         instantrunoff: ["A", "D", "B", "C"],
         plurality: ["D", "A", "B", "C"],
+        bucklin: ["C", ("A", "B"), "D"],
         borda: ["A", "C", "B", "D"],
         minimax: ["D", "A", "B", "C"],
     }
@@ -358,6 +373,7 @@ class ClonesTestCase(MethodTestCase):
         beatpath: [("A", "R"), "S", "T"],
         instantrunoff: ["A", ("R", "S"), "T"],
         plurality: ["A", "S", "R", "T"],
+        bucklin: ["R", "S", "T", "A"],
         borda: [("R", "S"), "A", "T"],
         minimax: ["A", "R", "S", "T"],
     }
@@ -389,6 +405,7 @@ class BeatpathTestCase(MethodTestCase):
         beatpath: ["A", "B", "C", "D"],
         instantrunoff: ["B", "C", "D", "A"],
         plurality: ["B", "C", "D", "A"],
+        bucklin: [("A", "B"), ("C", "D")],
         borda: ["A", "B", "C", "D"],
         minimax: ["A", "B", "C", "D"],
     }
@@ -427,6 +444,7 @@ class PentagonTestCase(MethodTestCase):
         beatpath: ["A", "B", "D", "C", "E"],
         instantrunoff: ["B", "E", "D", "C", "A"],
         plurality: ["E", "D", "C", "B", "A"],
+        bucklin: ["A", "B", "C", "D", "E"],
         borda: [("A", "B"), "D", "E", "C"],
         minimax: ["A", "B", ("D", "E"), "C"],
     }
@@ -457,6 +475,7 @@ class WholeRunoffTestCase(MethodTestCase):
         beatpath: ["B", "A", "C"],
         instantrunoff: ["A", "C", "B"],
         plurality: ["A", "C", "B"],
+        bucklin: ["B", "A", "C"],
         borda: ["B", "A", "C"],
         minimax: ["B", "A", "C"],
     }
@@ -482,6 +501,7 @@ class FractionalRunoffTestCase(MethodTestCase):
         beatpath: ["A", "B", "C", "D"],
         instantrunoff: ["A", "C", "B", "D"],
         plurality: ["C", "A", "B", "D"],
+        bucklin: ["A", ("B", "D"), "C"],
         borda: ["A", "B", "C", "D"],
         minimax: ["A", "B", "C", "D"],
     }

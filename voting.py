@@ -235,7 +235,42 @@ def modified_borda(votes, candidates):
 
 @export
 def bucklin(votes, candidates):
-    pass
+    # The Bucklin or Grand Junction voting system.
+    # Seems to work well for three candidates, but not more.
+    majority = sum(item[1] for item in votes) / 2
+    print majority
+    
+    for n in range(1, len(candidates) + 1):
+        totals = dict.fromkeys(candidates, 0)
+        for ranks, count in votes:
+            seen = 0
+            for row in unwind(ranks):
+                if len(row) > n - seen:
+                    # Divide the votes evenly among the preferences.
+                    # Letting each one count fully would let some ballots
+                    # count more than others.
+                    value = count * (n - seen) / len(row)
+                else:
+                    value = count
+                
+                for candidate in row:
+                    totals[candidate] += value
+                
+                seen += len(row)
+                if seen >= n:
+                    break
+        
+        print totals
+        counts = defaultdict(set)
+        for key in totals:
+            counts[totals[key]].add(key)
+        
+        print counts
+        result = sorted(counts, reverse=True)
+        print result
+        if result[0] > majority:
+            # We have a winner!
+            return [maybe_tuple(counts[total]) for total in result]
 
 @export
 def minimax(votes, candidates):
