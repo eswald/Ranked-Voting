@@ -506,3 +506,27 @@ class FractionalRunoffTestCase(MethodTestCase):
         minimax: ["A", "B", "C", "D"],
     }
 
+class IncompleteTestCase(MethodTestCase):
+    r'''Incomplete ballots should not penalize unranked candidates.
+        This criterion is more important in game design competitions
+        than in political elections, though.
+    '''#"""#'''
+    
+    candidates = "ABCDE"
+    
+    ballots = [
+        (["A", "B", "C"], 4),
+        (["B", "D", "E"], 4),
+        (["C", "D", "B"], 3),
+    ]
+    
+    results = {
+        rankedpairs: ["A", "B", "C", "D", "E"],
+        beatpath: ["A", "B", "C", "D", "E"],
+        instantrunoff: ["B", "A", "C", ("D", "E")],
+        plurality: [("A", "B"), "C", ("D", "E")],
+        bucklin: ["B", "D", "A", "C", "E"],
+        borda: ["B", "D", "C", "A", "E"],
+        minimax: ["A", "B", "C", "D", "E"],
+    }
+
