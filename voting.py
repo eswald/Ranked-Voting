@@ -247,7 +247,6 @@ def bucklin(votes, candidates):
     # The Bucklin or Grand Junction voting system.
     # Seems to work well for three candidates, but not more.
     majority = sum(item[1] for item in votes) / 2
-    print majority
     
     for n in range(1, len(candidates) + 1):
         totals = dict.fromkeys(candidates, 0)
@@ -269,14 +268,11 @@ def bucklin(votes, candidates):
                 if seen >= n:
                     break
         
-        print totals
         counts = defaultdict(set)
         for key in totals:
             counts[totals[key]].add(key)
         
-        print counts
         result = sorted(counts, reverse=True)
-        print result
         if result[0] > majority:
             # We have a winner!
             return [maybe_tuple(counts[total]) for total in result]
