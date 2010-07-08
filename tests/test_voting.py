@@ -431,3 +431,58 @@ class PentagonTestCase(MethodTestCase):
         minimax: ["A", "B", ("D", "E"), "C"],
     }
 
+class WholeRunoffTestCase(MethodTestCase):
+    r'''Differentiation between fractional and whole ER-IRV methods.
+        http://fc.antioch.edu/~james_green-armytage/vm/survey.htm#erirv
+        
+        When equal rankings are allowed in instant runoff voting,
+        you can either count each member of a first-place tie as a whole vote,
+        or give each voter one vote to divide among them.
+        In this case, whole votes would elect B, while fractional elects A.
+        Does this mean that the whole method is better?
+    '''#"""#'''
+    
+    candidates = "ABC"
+    
+    ballots = [
+        (["A", "B", "C"], 41),
+        (["B", "A", "C"], 10),
+        (["B", "C", "A"], 4),
+        ([("B", "C"), "A"], 30),
+        (["C", "B", "A"], 15),
+    ]
+    
+    results = {
+        rankedpairs: ["B", "A", "C"],
+        beatpath: ["B", "A", "C"],
+        instantrunoff: ["A", "C", "B"],
+        plurality: ["A", "C", "B"],
+        borda: ["B", "A", "C"],
+        minimax: ["B", "A", "C"],
+    }
+
+class FractionalRunoffTestCase(MethodTestCase):
+    r'''Differentiation between fractional and whole ER-IRV methods.
+        In this case, whole votes would elect C, while fractional elects A.
+        Does this mean that the fractional method is better?
+    '''#"""#'''
+    
+    candidates = "ABCD"
+    
+    ballots = [
+        (["A", "B", "C", "D"], 16),
+        (["C", "A", "B", "D"], 33),
+        (["B", "D", "A", "C"], 14),
+        ([("B", "D"), "A", "C"], 16),
+        ([("A", "D"), "B", "C"], 16),
+    ]
+    
+    results = {
+        rankedpairs: ["A", "B", "C", "D"],
+        beatpath: ["A", "B", "C", "D"],
+        instantrunoff: ["A", "C", "B", "D"],
+        plurality: ["C", "A", "B", "D"],
+        borda: ["A", "B", "C", "D"],
+        minimax: ["A", "B", "C", "D"],
+    }
+
