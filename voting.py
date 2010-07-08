@@ -78,6 +78,20 @@ class Graph(object):
         '''#"""#'''
         return [key for key in self.vertices if not self.vertices[key]]
     
+    def pop(self):
+        r'''Collect and remove root vertices in a single call.
+        '''#"""#'''
+        roots = set()
+        for key, value in list(self.vertices.items()):
+            if not value:
+                roots.add(key)
+                del self.vertices[key]
+        
+        for inbound in self.vertices.values():
+            inbound.difference_update(roots)
+        
+        return roots
+    
     def paths(self, source, sink):
         r'''Collect all paths from the source to the sink.
             Tends to yield shorter paths first.
@@ -138,10 +152,8 @@ def rankedpairs(votes, candidates):
             result = graph.acyclic_edge(better, worse)
     
     while graph:
-        winners = graph.roots()
+        winners = graph.pop()
         yield maybe_tuple(winners)
-        for item in winners:
-            graph.remove_vertex(item)
 
 @export
 def instantrunoff(votes, candidates):
@@ -297,11 +309,9 @@ def minimax(votes, candidates):
             result = graph.edge(a, b)
     
     while graph:
-        winners = graph.roots()
+        winners = graph.pop()
         if winners:
             yield maybe_tuple(winners)
-            for item in winners:
-                graph.remove_vertex(item)
         else:
             # This part could be optimized better.
             strength, sink, source = min((comparisons[a, b], a, b)
@@ -367,10 +377,8 @@ def beatpath(votes, candidates):
             final.edge(source, sink)
     
     while final:
-        winners = final.roots()
+        winners = final.pop()
         yield maybe_tuple(winners)
-        for item in winners:
-            final.remove_vertex(item)
 
 @export
 def river(votes, candidates):
