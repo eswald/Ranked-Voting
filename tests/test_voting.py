@@ -590,3 +590,53 @@ class RiverTestCase(MethodTestCase):
         minimax: ["B", "C", "D", "A"],
     }
 
+class TiedTestCase(MethodTestCase):
+    r'''Demonstration of an undecidable election.
+        http://web.archive.org/web/20070220235817/http://cec.wustl.edu/~rhl1/rbvote/desc.html
+        Todd definitely loses, but there is no fair way to choose between Ryan and Sara.
+    '''#"""#'''
+    
+    candidates = ["Ryan", "Sara", "Todd"]
+    
+    ballots = [
+        (["Ryan", "Sara", "Todd"], 25),
+        (["Ryan", "Todd", "Sara"], 25),
+        (["Sara", "Ryan", "Todd"], 25),
+        (["Sara", "Todd", "Ryan"], 25),
+    ]
+    
+    results = {
+        rankedpairs: [("Ryan", "Sara"), "Todd"],
+        beatpath: [("Ryan", "Sara"), "Todd"],
+        river: [("Ryan", "Sara"), "Todd"],
+        instantrunoff: [("Ryan", "Sara"), "Todd"],
+        plurality: [("Ryan", "Sara"), "Todd"],
+        bucklin: [("Ryan", "Sara"), "Todd"],
+        borda: [("Ryan", "Sara"), "Todd"],
+        minimax: [("Ryan", "Sara"), "Todd"],
+    }
+
+class RoShamBoTestCase(MethodTestCase):
+    r'''Demonstration of a three-way tie.
+        There is no fair way to let anyone win.
+    '''#"""#'''
+    
+    candidates = ["Rock", "Paper", "Scissors"]
+    
+    ballots = [
+        (["Rock", "Paper"], 25),
+        (["Paper", "Scissors"], 25),
+        (["Scissors", "Rock"], 25),
+    ]
+    
+    results = {
+        rankedpairs: [("Paper", "Rock", "Scissors")],
+        beatpath: [("Paper", "Rock", "Scissors")],
+        river: [("Paper", "Rock", "Scissors")],
+        instantrunoff: [("Paper", "Rock", "Scissors")],
+        plurality: [("Paper", "Rock", "Scissors")],
+        bucklin: [("Paper", "Rock", "Scissors")],
+        borda: [("Paper", "Rock", "Scissors")],
+        minimax: [("Paper", "Rock", "Scissors")],
+    }
+
