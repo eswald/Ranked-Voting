@@ -65,6 +65,27 @@ class Graph(object):
         self.vertices[sink].add(source)
         return True
     
+    def river_edge(self, source, sink):
+        r'''Create an edge from the source to the sink,
+            unless it would introduce a cycle or an outbound branching.
+            `source` and `sink` must be vertices.
+            Returns whether the edge was created.
+        '''#"""#'''
+        # Cycle avoidance
+        connected = set([source])
+        while connected:
+            inbound = self.vertices[connected.pop()]
+            if sink in inbound:
+                return False
+            connected.update(inbound)
+        
+        # Branching avoidance
+        if self.vertices[sink]:
+            return False
+        
+        self.vertices[sink].add(source)
+        return True
+    
     def edges(self):
         r'''Collect all edges in the graph.
         '''#"""#'''
@@ -377,5 +398,34 @@ def beatpath(votes, candidates):
 def river(votes, candidates):
     # A compromize between Beatpath and Ranked Pairs
     # http://web.archive.org/web/20071031155527/http://lists.electorama.com/pipermail/election-methods-electorama.com/2004-October/013971.html
-    pass
+    comparisons = defaultdict(int)
+    for ranks, count in votes:
+        above = set()
+        for row in unwind(ranks):
+            for candidate in row:
+                for former in above:
+                    comparisons[former, candidate] += count
+            above.update(row)
+    
+    # This seemingly-useless conversion avoids an error
+    # caused by adding new items during iteration.
+    comparisons = dict(comparisons)
+    majorities = sorted((comparisons[a,b], comparisons.get((b,a), 0), a, b)
+        for a,b in comparisons)
+    
+    graph = Graph(candidates)
+    retries = []
+    for major, minor, better, worse in reversed(majorities):
+        if major > minor:
+            result = graph.river_edge(better, worse)
+            if not result:
+                retries.append((better, worse))
+    
+    # Attempt a more total ordering.
+    for better, worse in retries:
+        graph.acyclic_edge(better, worse)
+    
+    while graph:
+        winners = graph.pop()
+        yield maybe_tuple(winners)
 

@@ -26,6 +26,7 @@ class MethodTestCase(VotingTestCase):
     results = {
         rankedpairs: [0, 1, 2, 3],
         beatpath: [0, 1, 2, 3],
+        river: [0, 1, 2, 3],
         instantrunoff: [0, 1, 2, 3],
         plurality: [0, 1, 2, 3],
         bucklin: [0, 1, 2, 3],
@@ -42,6 +43,9 @@ class MethodTestCase(VotingTestCase):
     
     def test_beatpath(self):
         self.check_method(beatpath)
+    
+    def test_river(self):
+        self.check_method(river)
     
     def test_instantrunoff(self):
         self.check_method(instantrunoff)
@@ -89,6 +93,7 @@ class TenesseeTestCase(MethodTestCase):
     results = {
         rankedpairs: ["Nashville", "Chattanooga", "Knoxville", "Memphis"],
         beatpath: ["Nashville", "Chattanooga", "Knoxville", "Memphis"],
+        river: ["Nashville", "Chattanooga", "Knoxville", "Memphis"],
         instantrunoff: ["Knoxville", "Memphis", "Nashville", "Chattanooga"],
         plurality: ["Memphis", "Nashville", "Knoxville", "Chattanooga"],
         bucklin: ["Nashville", "Chattanooga", "Memphis", "Knoxville"],
@@ -119,6 +124,7 @@ class MajorityTestCase(MethodTestCase):
     results = {
         rankedpairs: ["Andrew", "Catherine", "Brian", "David"],
         beatpath: ["Andrew", "Catherine", "Brian", "David"],
+        river: ["Andrew", "Catherine", "Brian", "David"],
         instantrunoff: ["Andrew", "Catherine", "Brian", "David"],
         plurality: ["Andrew", "Brian", "David", "Catherine"],
         bucklin: ["Andrew", "Brian", "David", "Catherine"],
@@ -142,6 +148,7 @@ class EqualRanksTestCase(MethodTestCase):
     results = {
         rankedpairs: [(0, 1), 2, 3],
         beatpath: [(0, 1), 2, 3],
+        river: [(0, 1), 2, 3],
         instantrunoff: [(0, 1), 2, 3],
         plurality: [0, 1, 2, 3],
         bucklin: [2, (0, 1), 3],
@@ -167,6 +174,7 @@ class MonotonicityTestCase(MethodTestCase):
     results = {
         rankedpairs: ["Andrea", "Belinda", "Cynthia"],
         beatpath: ["Andrea", "Belinda", "Cynthia"],
+        river: ["Andrea", "Belinda", "Cynthia"],
         instantrunoff: ["Andrea", "Belinda", "Cynthia"],
         plurality: ["Andrea", "Belinda", "Cynthia"],
         bucklin: ["Belinda", "Andrea", "Cynthia"],
@@ -193,6 +201,7 @@ class Monotonicity2TestCase(MonotonicityTestCase):
     results = {
         rankedpairs: ["Andrea", "Belinda", "Cynthia"],
         beatpath: ["Andrea", "Belinda", "Cynthia"],
+        river: ["Andrea", "Belinda", "Cynthia"],
         instantrunoff: ["Cynthia", "Andrea", "Belinda"],
         plurality: ["Andrea", "Cynthia", "Belinda"],
         bucklin: ["Andrea", "Belinda", "Cynthia"],
@@ -227,6 +236,7 @@ class PluralityTestCase(MethodTestCase):
     results = {
         rankedpairs: [1, 2, (3, 4, 5, 6), 7, 8, 0],
         beatpath: [1, 2, (3, 4, 5, 6), 7, 8, 0],
+        river: [1, 2, (3, 4, 5, 6), 7, 8, 0],
         instantrunoff: [1, 2, 0, (3, 4, 5, 6), 7, 8],
         plurality: [0, 1, 2, (3, 4, 5, 6), 7, 8],
         bucklin: [1, 2, (3, 4, 5, 6), 7, 8, 0],
@@ -255,6 +265,7 @@ class RunoffTestCase(MethodTestCase):
     results = {
         rankedpairs: ["Left", "Far Left", "Right", "Far Right"],
         beatpath: ["Left", "Far Left", "Right", "Far Right"],
+        river: ["Left", "Far Left", "Right", "Far Right"],
         instantrunoff: ["Left", "Right", "Far Left", "Far Right"],
         plurality: ["Right", "Left", "Far Left", "Far Right"],
         bucklin: [("Far Left", "Left"), ("Far Right", "Right")],
@@ -284,6 +295,7 @@ class CondorcetTestCase(MethodTestCase):
     results = {
         rankedpairs: ["Center", "Right", "Left"],
         beatpath: ["Center", "Right", "Left"],
+        river: ["Center", "Right", "Left"],
         instantrunoff: ["Right", "Left", "Center"],
         plurality: ["Right", "Left", "Center"],
         bucklin: ["Center", "Right", "Left"],
@@ -311,6 +323,7 @@ class MinimaxTestCase(MethodTestCase):
     results = {
         rankedpairs: ["Gore", "Bush", "Nader"],
         beatpath: ["Gore", "Bush", "Nader"],
+        river: ["Gore", "Bush", "Nader"],
         instantrunoff: ["Bush", "Nader", "Gore"],
         plurality: ["Bush", "Nader", "Gore"],
         bucklin: ["Gore", "Nader", "Bush"],
@@ -342,6 +355,7 @@ class SmithSetTestCase(MethodTestCase):
     results = {
         rankedpairs: ["A", "B", "C", "D"],
         beatpath: ["A", "B", "C", "D"],
+        river: ["A", "B", "C", "D"],
         instantrunoff: ["A", "D", "B", "C"],
         plurality: ["D", "A", "B", "C"],
         bucklin: ["C", ("A", "B"), "D"],
@@ -371,6 +385,7 @@ class ClonesTestCase(MethodTestCase):
     results = {
         rankedpairs: [("A", "R"), "S", "T"],
         beatpath: [("A", "R"), "S", "T"],
+        river: [("A", "R"), "S", "T"],
         instantrunoff: ["A", ("R", "S"), "T"],
         plurality: ["A", "S", "R", "T"],
         bucklin: ["R", "S", "T", "A"],
@@ -384,7 +399,7 @@ class BeatpathTestCase(MethodTestCase):
         
         In this case, the beatpath winner (A) would lose to the ranked pairs
         winner (B) in a head-to-head competition, but that loss is the weakest
-        link in the B-A-D cycle.
+        link in the B-A-D cycle.  River agrees with ranked pairs here.
     '''#"""#'''
     
     candidates = "ABCD"
@@ -403,6 +418,7 @@ class BeatpathTestCase(MethodTestCase):
     results = {
         rankedpairs: ["B", "A", "C", "D"],
         beatpath: ["A", "B", "C", "D"],
+        river: ["B", "A", "C", "D"],
         instantrunoff: ["B", "C", "D", "A"],
         plurality: ["B", "C", "D", "A"],
         bucklin: [("A", "B"), ("C", "D")],
@@ -442,6 +458,7 @@ class PentagonTestCase(MethodTestCase):
     results = {
         rankedpairs: ["B", "E", "A", "D", "C"],
         beatpath: ["A", "B", "D", "C", "E"],
+        river: ["B", "E", "A", "D", "C"],
         instantrunoff: ["B", "E", "D", "C", "A"],
         plurality: ["E", "D", "C", "B", "A"],
         bucklin: ["A", "B", "C", "D", "E"],
@@ -473,6 +490,7 @@ class WholeRunoffTestCase(MethodTestCase):
     results = {
         rankedpairs: ["B", "A", "C"],
         beatpath: ["B", "A", "C"],
+        river: ["B", "A", "C"],
         instantrunoff: ["A", "C", "B"],
         plurality: ["A", "C", "B"],
         bucklin: ["B", "A", "C"],
@@ -499,6 +517,7 @@ class FractionalRunoffTestCase(MethodTestCase):
     results = {
         rankedpairs: ["A", "B", "C", "D"],
         beatpath: ["A", "B", "C", "D"],
+        river: ["A", "B", "C", "D"],
         instantrunoff: ["A", "C", "B", "D"],
         plurality: ["C", "A", "B", "D"],
         bucklin: ["A", ("B", "D"), "C"],
@@ -523,10 +542,51 @@ class IncompleteTestCase(MethodTestCase):
     results = {
         rankedpairs: ["A", "B", "C", "D", "E"],
         beatpath: ["A", "B", "C", "D", "E"],
+        river: ["A", "B", "C", "D", "E"],
         instantrunoff: ["B", "A", "C", ("D", "E")],
         plurality: [("A", "B"), "C", ("D", "E")],
         bucklin: ["B", "D", "A", "C", "E"],
-        borda: ["B", "D", "C", "A", "E"],
+        borda: ["A", "B", "D", "C", "E"],
         minimax: ["A", "B", "C", "D", "E"],
+    }
+
+class RiverTestCase(MethodTestCase):
+    r'''Demonstration of the difference between River and Ranked Pairs.
+        http://web.archive.org/web/20071031155527/http://lists.electorama.com/pipermail/election-methods-electorama.com/2004-October/013971.html
+        This is the CD>BD>DA>AC>AB>BC option.
+    '''#"""#'''
+    
+    candidates = "ABCD"
+    
+    ballots = [
+        ("BCDA", 8),
+        ("BDAC", 5),
+        ("CDAB", 5),
+        ("ABCD", 4),
+        ("ACBD", 4),
+        ("ADCB", 3),
+        ("CABD", 3),
+        ("DACB", 3),
+        ("ACDB", 2),
+        ("BACD", 2),
+        ("BADC", 2),
+        ("BCAD", 2),
+        ("CBDA", 2),
+        ("CDBA", 2),
+        ("DABC", 2),
+        ("DBAC", 2),
+        ("CADB", 1),
+        ("DCAB", 1),
+    ]
+    
+    results = {
+        rankedpairs: ["B", "C", "D", "A"],
+        beatpath: ["B", "C", "D", "A"],
+        river: ["C", "D", "A", "B"],
+        instantrunoff: ["A", "B", "C", "D"],
+        plurality: ["B", ("A", "C"), "D"],
+        bucklin: ["C", "B", "A", "D"],
+        borda: ["C", "B", "A", "D"],
+        minimax: ["B", "C", "D", "A"],
     }
 
