@@ -147,6 +147,17 @@ class Graph(object):
         '''#"""#'''
         return bool(self.vertices)
 
+def regrouped(mapping):
+    r'''Collects sets of keys with identical values,
+        sorted from greatest to least.
+    '''#"""#'''
+    counts = defaultdict(set)
+    for key in mapping:
+        counts[mapping[key]].add(key)
+    
+    for value in sorted(counts, reverse=True):
+        yield counts[value]
+
 @export
 def rankedpairs(votes, candidates):
     # Tideman method, using a graph of preferences data.
@@ -161,15 +172,16 @@ def rankedpairs(votes, candidates):
                     comparisons[former, candidate] += count
             above.update(row)
     
-    # This seemingly-useless conversion avoids an error
-    # caused by adding new items during iteration.
-    comparisons = dict(comparisons)
-    majorities = sorted((comparisons[a,b], comparisons.get((b,a), 0), a, b)
-        for a,b in comparisons)
+    majorities = {}
+    for a,b in comparisons:
+        major = comparisons[a, b]
+        minor = comparisons.get((b, a), 0)
+        if major > minor:
+            majorities[a, b] = (major, minor)
     
     graph = Graph(candidates)
-    for major, minor, better, worse in reversed(majorities):
-        if major > minor:
+    for rank in regrouped(majorities):
+        for better, worse in rank:
             result = graph.acyclic_edge(better, worse)
     
     while graph:
@@ -228,13 +240,7 @@ def plurality(votes, candidates):
                 totals[candidate] += value
             break;
     
-    counts = defaultdict(list)
-    for key in totals:
-        counts[totals[key]].append(key)
-    
-    result = sorted(counts)
-    result.reverse()
-    return [maybe_tuple(counts[total]) for total in result]
+    return [maybe_tuple(rank) for rank in regrouped(totals)]
 
 @export
 def borda(votes, candidates):
@@ -258,10 +264,7 @@ def borda(votes, candidates):
             for candidate in row:
                 ratings[candidate] += value
     
-    counts = defaultdict(set)
-    for key in ratings:
-        counts[ratings[key]].add(key)
-    return [maybe_tuple(counts[total]) for total in sorted(counts, reverse=True)]
+    return [maybe_tuple(rank) for rank in regrouped(ratings)]
 
 @export
 def bucklin(votes, candidates):
@@ -312,9 +315,6 @@ def minimax(votes, candidates):
                     comparisons[former, candidate] += count
             above.update(row)
     
-    # This seemingly-useless conversion avoids an error
-    # caused by adding new items during iteration.
-    comparisons = dict(comparisons)
     graph = Graph(candidates)
     for a, b in comparisons:
         major = comparisons[a, b]
@@ -344,9 +344,6 @@ def beatpath(votes, candidates):
                     comparisons[former, candidate] += count
             above.update(row)
     
-    # This seemingly-useless conversion avoids an error
-    # caused by adding new items during iteration.
-    comparisons = dict(comparisons)
     graph = Graph(candidates)
     for a, b in comparisons:
         major = comparisons[a, b]
@@ -407,9 +404,6 @@ def river(votes, candidates):
                     comparisons[former, candidate] += count
             above.update(row)
     
-    # This seemingly-useless conversion avoids an error
-    # caused by adding new items during iteration.
-    comparisons = dict(comparisons)
     majorities = sorted((comparisons[a,b], comparisons.get((b,a), 0), a, b)
         for a,b in comparisons)
     
