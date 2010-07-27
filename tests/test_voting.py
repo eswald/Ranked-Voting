@@ -640,3 +640,31 @@ class RoShamBoTestCase(MethodTestCase):
         minimax: [("Paper", "Rock", "Scissors")],
     }
 
+class OctahedronTestCase(MethodTestCase):
+    r'''Demonstration of a four-way tie between an obvious winner and loser.
+    '''#"""#'''
+    
+    candidates = "ABCDEF"
+    
+    ballots = [
+        ("ABCF", 25),
+        ("ACDF", 25),
+        ("ADEF", 25),
+        ("AEBF", 25),
+        ("BCDF", 10),
+        ("CDEF", 10),
+        ("DEBF", 10),
+        ("EBCF", 10),
+    ]
+    
+    results = {
+        rankedpairs: ["A", ("B", "C", "D", "E"), "F"],
+        beatpath: ["A", ("B", "C", "D", "E"), "F"],
+        river: ["A", ("B", "C", "D", "E"), "F"],
+        instantrunoff: ["A", ("B", "C", "D", "E"), "F"],
+        plurality: ["A", ("B", "C", "D", "E"), "F"],
+        bucklin: ["A", ("B", "C", "D", "E"), "F"],
+        borda: ["A", ("B", "C", "D", "E"), "F"],
+        minimax: ["A", ("B", "C", "D", "E"), "F"],
+    }
+
