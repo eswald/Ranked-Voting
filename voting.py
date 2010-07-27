@@ -147,7 +147,7 @@ class Graph(object):
         '''#"""#'''
         return bool(self.vertices)
 
-def regrouped(mapping):
+def regrouped(mapping, reverse=True):
     r'''Collects sets of keys with identical values,
         sorted from greatest to least.
     '''#"""#'''
@@ -155,7 +155,7 @@ def regrouped(mapping):
     for key in mapping:
         counts[mapping[key]].add(key)
     
-    for value in sorted(counts, reverse=True):
+    for value in sorted(counts, reverse=reverse):
         yield counts[value]
 
 @export
@@ -315,22 +315,24 @@ def minimax(votes, candidates):
                     comparisons[former, candidate] += count
             above.update(row)
     
+    majorities = {}
     graph = Graph(candidates)
     for a, b in comparisons:
         major = comparisons[a, b]
         minor = comparisons.get((b, a), 0)
         if major > minor:
             result = graph.edge(a, b)
+            majorities[a, b] = (major, minor)
     
+    groups = regrouped(majorities, False)
     while graph:
         winners = graph.pop()
         if winners:
             yield maybe_tuple(winners)
         else:
-            # This part could be optimized better.
-            strength, sink, source = min((comparisons[a, b], a, b)
-                for a, b in graph.edges())
-            graph.remove_edge(sink, source)
+            for sink, source in next(groups):
+                if (sink, source) in graph.edges():
+                    graph.remove_edge(sink, source)
 
 @export
 def beatpath(votes, candidates):
