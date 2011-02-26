@@ -1,6 +1,57 @@
 <html>
+  <head>
+    <title>{{ contest.title|escape }}</title>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/jquery-ui.min.js"></script>
+    <style>
+      <!--
+      .option {
+        border-radius: 1em;
+        padding: .2em .5em;
+        border: 1px solid red;
+        background: #FCC;
+        margin: .1em;
+      }
+      
+      .ranking {
+        padding: .3em;
+        margin: 0;
+        border-top: .2em solid #CCC;
+      }
+      
+      .choices {
+        border-bottom: .2em solid #CCC;
+      }
+      -->
+    </style>
+  </head>
   <body>
     <h1>{{ contest.title|escape }}</h1>
     <p>{{ contest.description }}</p>
+    <div class="choices">
+      <div class="ranking">
+      </div>
+      <div class="ranking">
+        <span class="option">One</span>
+        <span class="option">Two</span>
+      </div>
+      <div class="ranking">
+      </div>
+      <div class="ranking">
+        <span class="option">Three</span>
+        <span class="option">Four</span>
+      </div>
+      <div class="ranking">
+      </div>
+    </div>
+    <script type="text/javascript">
+      <!--
+      $(function() {
+        $(".ranking").sortable({
+          connectWith: ".ranking"
+        }).disableSelection();
+      });
+      //-->
+    </script>
   </body>
 </html>
