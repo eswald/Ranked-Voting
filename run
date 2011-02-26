@@ -2,4 +2,4 @@
 cd "$(dirname $0)"
 dir="$(basename "$(pwd)")"
 cd ..
-exec ./google_appengine/dev_appserver.py "$dir/"
+exec ./google_appengine/dev_appserver.py "$dir/" "$@"
