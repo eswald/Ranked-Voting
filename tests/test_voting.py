@@ -670,6 +670,7 @@ class OctahedronTestCase(MethodTestCase):
 
 class EqualWeightTestCase(MethodTestCase):
     r'''Demonstration of a partially cyclic graph where each edge has equal weight.
+        Minimax produces unusual results here because it forgets relevant information.
     '''#"""#'''
     
     candidates = "ABCDE"
@@ -694,7 +695,7 @@ class EqualWeightTestCase(MethodTestCase):
         plurality: ["A", ("B", "C", "D"), "E"],
         bucklin: ["A", ("B", "C", "D"), "E"],
         borda: ["A", ("B", "C", "D"), "E"],
-        minimax: ["A", ("B", "C", "D"), "E"],
+        minimax: ["A", ("B", "C", "D", "E")],
     }
 
 
