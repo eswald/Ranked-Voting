@@ -65,6 +65,23 @@ class Graph(object):
         self.vertices[sink].add(source)
         return True
     
+    def acyclic_edges(self, edges):
+        r'''Create edges from the (source, sink) pairs,
+            as long as the graph remains acyclic.
+            `edges` must be a sequence of vertex pairs.
+            Returns the number of edges created.
+        '''#"""#'''
+        completed = []
+        for source, sink in edges:
+            result = self.acyclic_edge(source, sink)
+            if result:
+                completed.append((source, sink))
+            else:
+                for first, second in completed:
+                    result = self.remove_edge(first, second)
+                return 0
+        return len(completed)
+    
     def river_edge(self, source, sink):
         r'''Create an edge from the source to the sink,
             unless it would introduce a cycle or an outbound branching.
@@ -181,15 +198,7 @@ def rankedpairs(votes, candidates):
     
     graph = Graph(candidates)
     for rank in regrouped(majorities):
-        completed = []
-        for better, worse in rank:
-            result = graph.acyclic_edge(better, worse)
-            if result:
-                completed.append((better, worse))
-            else:
-                for source, sink in completed:
-                    result = graph.remove_edge(source, sink)
-                break
+        graph.acyclic_edges(rank)
     
     while graph:
         winners = graph.pop()
