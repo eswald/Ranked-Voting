@@ -47,4 +47,11 @@ class ContestTestCase(VotingTestCase):
         response = app.get("/" + slug)
         print response
         self.assertIn(title, response)
+    
+    def test_unknown(self):
+        # Unknown contests should result in 404 errors.
+        slug = "unknown"
+        app = TestApp(application)
+        response = app.get("/" + slug, status=404)
+        self.assertEqual("404 Not Found", response.status)
 

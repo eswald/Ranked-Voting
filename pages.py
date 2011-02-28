@@ -111,7 +111,12 @@ class VotePage(Page):
 class ContestPage(Page):
     def get(self):
         slug = self.request.url.split("/")[3]
-        contest = Contest.gql("WHERE slug = :1 LIMIT 1", slug)[0]
+        query = Contest.gql("WHERE slug = :1 LIMIT 1", slug)
+        try:
+            contest = query[0]
+        except IndexError:
+            self.response.set_status(404, 'Not Found')
+            return
         self.render("contest.html", contest=contest)
 
 application = webapp.WSGIApplication([
