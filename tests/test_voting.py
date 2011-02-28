@@ -668,3 +668,33 @@ class OctahedronTestCase(MethodTestCase):
         minimax: ["A", ("B", "C", "D", "E"), "F"],
     }
 
+class EqualWeightTestCase(MethodTestCase):
+    r'''Demonstration of a partially cyclic graph where each edge has equal weight.
+    '''#"""#'''
+    
+    candidates = "ABCDE"
+    
+    ballots = [
+        ("AB", 10),
+        ("AC", 10),
+        ("AD", 10),
+        ("BC", 10),
+        ("CD", 10),
+        ("DB", 10),
+        ("BE", 10),
+        ("CE", 10),
+        ("DE", 10),
+    ]
+    
+    results = {
+        rankedpairs: ["A", ("B", "C", "D"), "E"],
+        beatpath: ["A", ("B", "C", "D"), "E"],
+        river: ["A", ("B", "C", "D"), "E"],
+        instantrunoff: ["A", ("B", "C", "D"), "E"],
+        plurality: ["A", ("B", "C", "D"), "E"],
+        bucklin: ["A", ("B", "C", "D"), "E"],
+        borda: ["A", ("B", "C", "D"), "E"],
+        minimax: ["A", ("B", "C", "D"), "E"],
+    }
+
+
