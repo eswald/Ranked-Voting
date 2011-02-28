@@ -24,6 +24,7 @@ def fixpaths():
     sys.path.insert(0, join(google_path, "lib", "antlr3"))
     sys.path.insert(0, join(google_path, "lib", "ipaddr"))
     sys.path.insert(0, join(google_path, "lib", "django"))
+    sys.path.insert(0, join(google_path, "lib", "fancy_urllib"))
     sys.path.insert(0, join(google_path, "lib", "webob"))
     sys.path.insert(0, google_path)
     
