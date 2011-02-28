@@ -63,9 +63,19 @@ class Graph(object):
             self.vertices[sink].add(source)
             completed.add((source, sink))
         
+        # Prune any new cyclic edges.
+        cyclic = self.prune_cycles(completed)
+        return len(completed) - len(cyclic)
+    
+    def prune_cycles(self, edges):
+        r'''Remove any of the specified edges that participate in cycles.
+            `edges` must be a sequence of vertex pairs.
+            Returns a set of the edges removed.
+        '''#"""#'''
+        
         # Collect all of the edges in cycles.
         cyclic = set()
-        for source, sink in completed:
+        for source, sink in edges:
             seen = set()
             connected = set([source])
             while connected:
@@ -77,47 +87,42 @@ class Graph(object):
                 seen.add(vertex)
                 connected.update(inbound - seen)
         
-        # Prune any new cyclic edges.
+        # Prune all collected edges at once.
         for source, sink in cyclic:
             self.remove_edge(source, sink)
         
-        return len(completed) - len(cyclic)
-    
-    def river_edge(self, source, sink):
-        r'''Create an edge from the source to the sink,
-            unless it would introduce a cycle or an outbound branching.
-            `source` and `sink` must be vertices.
-            Returns whether the edge was created.
-        '''#"""#'''
-        # Cycle avoidance
-        connected = set([source])
-        while connected:
-            inbound = self.vertices[connected.pop()]
-            if sink in inbound:
-                return False
-            connected.update(inbound)
-        
-        # Branching avoidance
-        if self.vertices[sink]:
-            return False
-        
-        self.vertices[sink].add(source)
-        return True
+        return cyclic
     
     def river_edges(self, edges):
         r'''Create each of the specified edges that would not
             introduce a cycle or an outbound branching.
             `edges` must be a sequence of vertex pairs.
-            Returns a list of edges that were not created.
+            Returns a set of edges that were not created.
         '''#"""#'''
         
-        retries = []
+        # Group the edges by their outbound vertex.
+        sinks = defaultdict(set)
         for source, sink in edges:
-            result = self.river_edge(source, sink)
-            if not result:
-                retries.append((source, sink))
+            sinks[sink].add(source)
         
-        return retries
+        # Create any edges that don't create branches.
+        blocked = set()
+        completed = set()
+        for sink in sinks:
+            sources = sinks[sink]
+            if self.vertices[sink] or len(sources) > 1:
+                # Outbound branching detected.
+                for source in sources:
+                    blocked.add((source, sink))
+            else:
+                source = sources.pop()
+                self.vertices[sink].add(source)
+                completed.add((source, sink))
+        
+        # Prune any new cyclic edges.
+        cyclic = self.prune_cycles(completed)
+        
+        return blocked | cyclic
     
     def edges(self):
         r'''Collect all edges in the graph.
