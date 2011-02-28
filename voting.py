@@ -181,8 +181,15 @@ def rankedpairs(votes, candidates):
     
     graph = Graph(candidates)
     for rank in regrouped(majorities):
+        completed = []
         for better, worse in rank:
             result = graph.acyclic_edge(better, worse)
+            if result:
+                completed.append((better, worse))
+            else:
+                for source, sink in completed:
+                    result = graph.remove_edge(source, sink)
+                break
     
     while graph:
         winners = graph.pop()
