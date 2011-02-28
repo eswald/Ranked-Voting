@@ -50,21 +50,6 @@ class Graph(object):
         self.vertices[sink].add(source)
         return True
     
-    def acyclic_edge(self, source, sink):
-        r'''Create an edge from the source to the sink,
-            as long as the graph remains acyclic.
-            `source` and `sink` must be vertices.
-            Returns whether the edge was created.
-        '''#"""#'''
-        connected = set([source])
-        while connected:
-            inbound = self.vertices[connected.pop()]
-            if sink in inbound:
-                return False
-            connected.update(inbound)
-        self.vertices[sink].add(source)
-        return True
-    
     def acyclic_edges(self, edges):
         r'''Create edges from the (source, sink) pairs,
             as long as the graph remains acyclic.
@@ -118,6 +103,21 @@ class Graph(object):
         
         self.vertices[sink].add(source)
         return True
+    
+    def river_edges(self, edges):
+        r'''Create each of the specified edges that would not
+            introduce a cycle or an outbound branching.
+            `edges` must be a sequence of vertex pairs.
+            Returns a list of edges that were not created.
+        '''#"""#'''
+        
+        retries = []
+        for source, sink in edges:
+            result = self.river_edge(source, sink)
+            if not result:
+                retries.append((source, sink))
+        
+        return retries
     
     def edges(self):
         r'''Collect all edges in the graph.
@@ -422,14 +422,13 @@ def river(votes, candidates):
     graph = Graph(candidates)
     retries = []
     for rank in regrouped(majorities):
-        for better, worse in rank:
-            result = graph.river_edge(better, worse)
-            if not result:
-                retries.append((better, worse))
+        result = graph.river_edges(rank)
+        if result:
+            retries.append(result)
     
     # Attempt a more total ordering.
-    for better, worse in retries:
-        graph.acyclic_edge(better, worse)
+    for rank in retries:
+        graph.acyclic_edges(rank)
     
     while graph:
         winners = graph.pop()
