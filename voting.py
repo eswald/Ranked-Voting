@@ -316,6 +316,11 @@ def bucklin(votes, candidates):
         if result[0] > majority:
             # We have a winner!
             return [maybe_tuple(counts[total]) for total in result]
+    else:
+        # No majority exists.
+        # This might not be the best result,
+        # but I'm not sure how to better express the lack of majority.
+        return [maybe_tuple(candidates)]
 
 @export
 def minimax(votes, candidates):

@@ -671,6 +671,7 @@ class OctahedronTestCase(MethodTestCase):
 class EqualWeightTestCase(MethodTestCase):
     r'''Demonstration of a partially cyclic graph where each edge has equal weight.
         Minimax produces unusual results here because it forgets relevant information.
+        Bucklin produces unusual results here because no candidate is listed on a majority of ballots.
     '''#"""#'''
     
     candidates = "ABCDE"
@@ -693,7 +694,7 @@ class EqualWeightTestCase(MethodTestCase):
         river: ["A", ("B", "C", "D"), "E"],
         instantrunoff: ["A", ("B", "C", "D"), "E"],
         plurality: ["A", ("B", "C", "D"), "E"],
-        bucklin: ["A", ("B", "C", "D"), "E"],
+        bucklin: [("A", "B", "C", "D", "E")],
         borda: ["A", ("B", "C", "D"), "E"],
         minimax: ["A", ("B", "C", "D", "E")],
     }
