@@ -180,22 +180,11 @@ class Graph(object):
         '''#"""#'''
         return bool(self.vertices)
 
-def regrouped(mapping, reverse=True):
-    r'''Collects sets of keys with identical values,
-        sorted from greatest to least.
+def pairwise(votes):
+    r'''Collects pairwise majorities from the ballots.
+        Returns a dictionary of (winner, loser) => (major, minor),
+        suitable for passing into regrouped().
     '''#"""#'''
-    counts = defaultdict(set)
-    for key in mapping:
-        counts[mapping[key]].add(key)
-    
-    for value in sorted(counts, reverse=reverse):
-        yield counts[value]
-
-@export
-def rankedpairs(votes, candidates):
-    # Tideman method, using a graph of preferences data.
-    # Modified by ignoring unstated candidates, instead of
-    # assuming that they're all worse than the ranked ones.
     comparisons = defaultdict(int)
     for ranks, count in votes:
         above = set()
@@ -212,6 +201,25 @@ def rankedpairs(votes, candidates):
         if major > minor:
             majorities[a, b] = (major, minor)
     
+    return majorities
+
+def regrouped(mapping, reverse=True):
+    r'''Collects sets of keys with identical values,
+        sorted from greatest to least.
+    '''#"""#'''
+    counts = defaultdict(set)
+    for key in mapping:
+        counts[mapping[key]].add(key)
+    
+    for value in sorted(counts, reverse=reverse):
+        yield counts[value]
+
+@export
+def rankedpairs(votes, candidates):
+    # Tideman method, using a graph of preferences data.
+    # Modified by ignoring unstated candidates, instead of
+    # assuming that they're all worse than the ranked ones.
+    majorities = pairwise(votes)
     graph = Graph(candidates)
     for rank in regrouped(majorities):
         graph.acyclic_edges(rank)
@@ -343,23 +351,10 @@ def minimax(votes, candidates):
     # Minimax / Successive reversal / Simpson method.
     # Using rankings, select unbeaten candidates.
     # If there aren't any, drop the weakest wins.
-    comparisons = defaultdict(int)
-    for ranks, count in votes:
-        above = set()
-        for row in unwind(ranks):
-            for candidate in row:
-                for former in above:
-                    comparisons[former, candidate] += count
-            above.update(row)
-    
-    majorities = {}
+    majorities = pairwise(votes)
     graph = Graph(candidates)
-    for a, b in comparisons:
-        major = comparisons[a, b]
-        minor = comparisons.get((b, a), 0)
-        if major > minor:
-            result = graph.edge(a, b)
-            majorities[a, b] = (major, minor)
+    for a, b in majorities:
+        graph.edge(a, b)
     
     groups = regrouped(majorities, False)
     while graph:
@@ -374,21 +369,10 @@ def minimax(votes, candidates):
 @export
 def beatpath(votes, candidates):
     # Schulze method, equivalent to Cloneproof Schwartz Sequential Dropping.
-    comparisons = defaultdict(int)
-    for ranks, count in votes:
-        above = set()
-        for row in unwind(ranks):
-            for candidate in row:
-                for former in above:
-                    comparisons[former, candidate] += count
-            above.update(row)
-    
+    majorities = pairwise(votes)
     graph = Graph(candidates)
-    for a, b in comparisons:
-        major = comparisons[a, b]
-        minor = comparisons.get((b, a), 0)
-        if major > minor:
-            result = graph.edge(a, b)
+    for a, b in majorities:
+        graph.edge(a, b)
     
     def path_steps(path):
         sequence = iter(path)
@@ -401,7 +385,7 @@ def beatpath(votes, candidates):
         # max() doesn't like empty iterables.
         strength = 0
         for path in graph.paths(source, sink):
-            path_strength = min(comparisons.get(step, 0)
+            path_strength = min(majorities[step]
                 for step in path_steps(path))
             if path_strength > strength:
                 strength = path_strength
@@ -434,22 +418,11 @@ def beatpath(votes, candidates):
 def river(votes, candidates):
     # A compromize between Beatpath and Ranked Pairs
     # http://web.archive.org/web/20071031155527/http://lists.electorama.com/pipermail/election-methods-electorama.com/2004-October/013971.html
-    comparisons = defaultdict(int)
-    for ranks, count in votes:
-        above = set()
-        for row in unwind(ranks):
-            for candidate in row:
-                for former in above:
-                    comparisons[former, candidate] += count
-            above.update(row)
-    
-    majorities = sorted((comparisons[a,b], comparisons.get((b,a), 0), a, b)
-        for a,b in comparisons)
-    
+    majorities = pairwise(votes)
     graph = Graph(candidates)
     retries = []
-    for major, minor, better, worse in reversed(majorities):
-        if major > minor:
+    for rank in regrouped(majorities):
+        for better, worse in rank:
             result = graph.river_edge(better, worse)
             if not result:
                 retries.append((better, worse))
