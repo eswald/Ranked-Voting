@@ -71,16 +71,32 @@ class Graph(object):
             `edges` must be a sequence of vertex pairs.
             Returns the number of edges created.
         '''#"""#'''
-        completed = []
+        
+        # Optimistically add all edges.
+        completed = set()
         for source, sink in edges:
-            result = self.acyclic_edge(source, sink)
-            if result:
-                completed.append((source, sink))
-            else:
-                for first, second in completed:
-                    result = self.remove_edge(first, second)
-                return 0
-        return len(completed)
+            self.vertices[sink].add(source)
+            completed.add((source, sink))
+        
+        # Collect all of the edges in cycles.
+        cyclic = set()
+        for source, sink in completed:
+            seen = set()
+            connected = set([source])
+            while connected:
+                vertex = connected.pop()
+                inbound = self.vertices[vertex]
+                if sink in inbound:
+                    cyclic.add((source, sink))
+                    break
+                seen.add(vertex)
+                connected.update(inbound - seen)
+        
+        # Prune any new cyclic edges.
+        for source, sink in cyclic:
+            self.remove_edge(source, sink)
+        
+        return len(completed) - len(cyclic)
     
     def river_edge(self, source, sink):
         r'''Create an edge from the source to the sink,
