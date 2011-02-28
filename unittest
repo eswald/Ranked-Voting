@@ -2,4 +2,4 @@
 # unit2 would be nice, if it did decent buffering and discovery.
 # It seems to do either one, but not both at the same time.
 cd $(dirname "$0")
-PYTHONPATH=../google_appengine nosetests
+PYTHONPATH=../google_appengine nosetests "$@" 2>&1 | tee lastrun.log
