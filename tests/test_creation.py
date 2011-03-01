@@ -79,6 +79,17 @@ class SlugTestCase(VotingTestCase):
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.slug, "abcd")
     
+    def test_form(self):
+        # The creation form should fill in the slug properly.
+        user = self.login()
+        app = TestApp(application)
+        page = app.get("/create")
+        slug = "abcd"
+        page.form.set("slug", slug)
+        response = page.form.submit()
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEquals(fetched.slug, slug)
+    
     def test_conflict(self):
         slug = "abcd"
         Contest(slug=slug).put()
@@ -235,6 +246,18 @@ class DescriptionTestCase(VotingTestCase):
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.description, description)
     
+    def test_form(self):
+        # The creation form should fill in the description properly.
+        user = self.login()
+        app = TestApp(application)
+        page = app.get("/create")
+        description = "Contest Description goes Here"
+        page.form.set("slug", "abcd")
+        page.form.set("description", description)
+        response = page.form.submit()
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEquals(fetched.description, description)
+    
     def test_multiline(self):
         user = self.login()
         app = TestApp(application)
@@ -261,7 +284,7 @@ class DescriptionTestCase(VotingTestCase):
         self.assertEquals(fetched.description, default)
     
     def test_blank(self):
-        # The title, if blank, should default to the slug.
+        # The description, if blank, should default to the slug.
         user = self.login()
         app = TestApp(application)
         default = "Created by " + user.nickname()
