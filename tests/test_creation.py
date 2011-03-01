@@ -8,7 +8,7 @@ class UserTestCase(VotingTestCase):
     def test_user_added(self):
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": "abcd"})
+        response = app.post("/create", params={"slug": "abcd"})
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.creator, user)
     
@@ -18,7 +18,7 @@ class UserTestCase(VotingTestCase):
         email = "nobody@nowhere.com"
         other = User(email=email)
         app = TestApp(application)
-        response = app.post("/save", params={"slug": "abcd", "user": email})
+        response = app.post("/create", params={"slug": "abcd", "user": email})
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.creator, user)
 
@@ -26,7 +26,7 @@ class CreationTestCase(VotingTestCase):
     def test_added(self):
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": "abcd"})
+        response = app.post("/create", params={"slug": "abcd"})
         fetched = Contest.all().fetch(1)[0]
         self.assertAlmostEqual(fetched.created, datetime.now(), delta=timedelta(seconds=2))
     
@@ -35,7 +35,7 @@ class CreationTestCase(VotingTestCase):
         user = self.login()
         now = datetime.now()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": "abcd", "created": now + timedelta(days=2)})
+        response = app.post("/create", params={"slug": "abcd", "created": now + timedelta(days=2)})
         fetched = Contest.all().fetch(1)[0]
         self.assertAlmostEqual(fetched.created, datetime.now(), delta=timedelta(seconds=2))
 
@@ -43,7 +43,7 @@ class StartingTestCase(VotingTestCase):
     def test_added(self):
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": "abcd"})
+        response = app.post("/create", params={"slug": "abcd"})
         fetched = Contest.all().fetch(1)[0]
         self.assertAlmostEqual(fetched.starts, datetime.now(), delta=timedelta(seconds=2))
     
@@ -51,7 +51,7 @@ class StartingTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         when = datetime(*(datetime.now() + timedelta(days=4, seconds=42)).timetuple()[:6])
-        response = app.post("/save", params={"slug": "abcd", "starts": str(when)})
+        response = app.post("/create", params={"slug": "abcd", "starts": str(when)})
         fetched = Contest.all().fetch(1)[0]
         self.assertEqual(fetched.starts, when)
 
@@ -59,7 +59,7 @@ class ClosingTestCase(VotingTestCase):
     def test_added(self):
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": "abcd"})
+        response = app.post("/create", params={"slug": "abcd"})
         fetched = Contest.all().fetch(1)[0]
         self.assertGreater(fetched.closes, datetime.now() + timedelta(days=7))
     
@@ -67,7 +67,7 @@ class ClosingTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         when = datetime(*(datetime.now() + timedelta(days=4, seconds=42)).timetuple()[:6])
-        response = app.post("/save", params={"slug": "abcd", "closes": str(when)})
+        response = app.post("/create", params={"slug": "abcd", "closes": str(when)})
         fetched = Contest.all().fetch(1)[0]
         self.assertEqual(fetched.closes, when)
 
@@ -75,7 +75,7 @@ class SlugTestCase(VotingTestCase):
     def test_added(self):
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": "abcd"})
+        response = app.post("/create", params={"slug": "abcd"})
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.slug, "abcd")
     
@@ -84,42 +84,42 @@ class SlugTestCase(VotingTestCase):
         Contest(slug=slug).put()
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": slug})
+        response = app.post("/create", params={"slug": slug})
         fetched = Contest.all().fetch(2)
         self.assertEqual(len(fetched), 1)
     
     def test_reserved_create(self):
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": "create"})
+        response = app.post("/create", params={"slug": "create"})
         fetched = Contest.all().fetch(2)
         self.assertEqual(len(fetched), 0)
     
     def test_reserved_save(self):
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": "save"})
+        response = app.post("/create", params={"slug": "save"})
         fetched = Contest.all().fetch(2)
         self.assertEqual(len(fetched), 0)
     
     def test_reserved_list(self):
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": "list"})
+        response = app.post("/create", params={"slug": "list"})
         fetched = Contest.all().fetch(2)
         self.assertEqual(len(fetched), 0)
     
     def test_empty(self):
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": ""})
+        response = app.post("/create", params={"slug": ""})
         fetched = Contest.all().fetch(2)
         self.assertEqual(len(fetched), 0)
     
     def test_omitted(self):
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"title": "Yet Another Design Competition"})
+        response = app.post("/create", params={"title": "Yet Another Design Competition"})
         fetched = Contest.all().fetch(2)
         self.assertEqual(len(fetched), 0)
     
@@ -127,7 +127,7 @@ class SlugTestCase(VotingTestCase):
         request = "AbCd"
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": request})
+        response = app.post("/create", params={"slug": request})
         fetched = Contest.all().fetch(1)[0]
         self.assertEqual(fetched.slug, request.lower())
     
@@ -136,7 +136,7 @@ class SlugTestCase(VotingTestCase):
         request = "one and two, three and four; five"
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": request})
+        response = app.post("/create", params={"slug": request})
         fetched = Contest.all().fetch(1)[0]
         self.assertEqual(fetched.slug, "one-and-two-three-and-four-five")
     
@@ -145,7 +145,7 @@ class SlugTestCase(VotingTestCase):
         request = "-inner: "
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": request})
+        response = app.post("/create", params={"slug": request})
         fetched = Contest.all().fetch(1)[0]
         self.assertEqual(fetched.slug, "inner")
     
@@ -154,7 +154,7 @@ class SlugTestCase(VotingTestCase):
         request = "something-1.3"
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": request})
+        response = app.post("/create", params={"slug": request})
         fetched = Contest.all().fetch(1)[0]
         self.assertEqual(fetched.slug, request)
 
@@ -163,7 +163,7 @@ class TitleTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         title = "Contest Title goes Here"
-        response = app.post("/save", params={"slug": "abcd", "title": title})
+        response = app.post("/create", params={"slug": "abcd", "title": title})
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.title, title)
     
@@ -171,7 +171,7 @@ class TitleTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         title = " Contest Title goes Here\n"
-        response = app.post("/save", params={"slug": "abcd", "title": title})
+        response = app.post("/create", params={"slug": "abcd", "title": title})
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.title, title.strip())
     
@@ -179,7 +179,7 @@ class TitleTestCase(VotingTestCase):
         # The title, if omitted, should default to the slug.
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": "abcd"})
+        response = app.post("/create", params={"slug": "abcd"})
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.title, fetched.slug)
     
@@ -187,7 +187,7 @@ class TitleTestCase(VotingTestCase):
         # The title, if blank, should default to the slug.
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": "abcd", "title": ""})
+        response = app.post("/create", params={"slug": "abcd", "title": ""})
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.title, fetched.slug)
 
@@ -195,14 +195,14 @@ class PublicTestCase(VotingTestCase):
     def test_default(self):
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": "abcd"})
+        response = app.post("/create", params={"slug": "abcd"})
         fetched = Contest.all().fetch(1)[0]
         self.assertEqual(fetched.public, False)
     
     def test_checked(self):
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": "abcd", "public": "1"})
+        response = app.post("/create", params={"slug": "abcd", "public": "1"})
         fetched = Contest.all().fetch(1)[0]
         self.assertEqual(fetched.public, True)
     
@@ -210,7 +210,7 @@ class PublicTestCase(VotingTestCase):
         # An empty string for the public attribute is interpreted as false.
         user = self.login()
         app = TestApp(application)
-        response = app.post("/save", params={"slug": "abcd", "public": ""})
+        response = app.post("/create", params={"slug": "abcd", "public": ""})
         fetched = Contest.all().fetch(1)[0]
         self.assertEqual(fetched.public, False)
 
@@ -219,7 +219,7 @@ class DescriptionTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         description = "Contest Description goes Here"
-        response = app.post("/save", params={"slug": "abcd", "description": description})
+        response = app.post("/create", params={"slug": "abcd", "description": description})
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.description, description)
     
@@ -227,7 +227,7 @@ class DescriptionTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         description = "Contest Description goes Here.\nMore lines are explicitly allowed."
-        response = app.post("/save", params={"slug": "abcd", "description": description})
+        response = app.post("/create", params={"slug": "abcd", "description": description})
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.description, description)
     
@@ -235,7 +235,7 @@ class DescriptionTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         description = " Contest Description goes Here\n"
-        response = app.post("/save", params={"slug": "abcd", "description": description})
+        response = app.post("/create", params={"slug": "abcd", "description": description})
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.description, description.strip())
     
@@ -244,7 +244,7 @@ class DescriptionTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         default = "Created by " + user.nickname()
-        response = app.post("/save", params={"slug": "abcd"})
+        response = app.post("/create", params={"slug": "abcd"})
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.description, default)
     
@@ -253,7 +253,7 @@ class DescriptionTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         default = "Created by " + user.nickname()
-        response = app.post("/save", params={"slug": "abcd", "description": ""})
+        response = app.post("/create", params={"slug": "abcd", "description": ""})
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.description, default)
 

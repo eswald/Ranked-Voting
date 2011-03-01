@@ -56,12 +56,11 @@ class ListPage(Page):
         self.render("list.html", contests=current)
 
 class CreatePage(Page):
+    reserved = ["", "create", "save", "list", "admin"]
+    
     def get(self):
         user = users.get_current_user()
         self.render("create.html", user=user)
-
-class SavePage(Page):
-    reserved = ["", "create", "save", "list", "admin"]
     
     def post(self):
         try:
@@ -122,7 +121,6 @@ class ContestPage(Page):
 application = webapp.WSGIApplication([
         ("/", MainPage),
         ("/create", CreatePage),
-        ("/save", SavePage),
         ("/list", ListPage),
         ("/[\w.-]+", ContestPage),
 ], debug=True)

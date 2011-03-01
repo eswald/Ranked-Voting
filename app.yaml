@@ -8,10 +8,6 @@ handlers:
   script: pages.py
   login: required
 
-- url: /save
-  script: pages.py
-  login: required
-
 - url: /list
   script: pages.py
   login: admin
