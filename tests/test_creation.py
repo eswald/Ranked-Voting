@@ -222,6 +222,17 @@ class PublicTestCase(VotingTestCase):
         fetched = Contest.all().fetch(1)[0]
         self.assertEqual(fetched.public, False)
     
+    def test_form(self):
+        # The creation form should have a checkbox for the public property.
+        user = self.login()
+        app = TestApp(application)
+        page = app.get("/create")
+        page.form.set("slug", "abcd")
+        page.form.set("public", "1")
+        response = page.form.submit()
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEquals(fetched.public, True)
+    
     def test_checked(self):
         user = self.login()
         app = TestApp(application)
