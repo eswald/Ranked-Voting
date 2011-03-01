@@ -167,6 +167,18 @@ class TitleTestCase(VotingTestCase):
         fetched = Contest.all().fetch(1)[0]
         self.assertEquals(fetched.title, title)
     
+    def test_form(self):
+        # The creation form should fill in the title properly.
+        user = self.login()
+        app = TestApp(application)
+        page = app.get("/create")
+        title = "Contest Title goes Here"
+        page.form.set("slug", "abcd")
+        page.form.set("title", title)
+        response = page.form.submit()
+        fetched = Contest.all().fetch(1)[0]
+        self.assertEquals(fetched.title, title)
+    
     def test_trimmed(self):
         user = self.login()
         app = TestApp(application)
