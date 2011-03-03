@@ -9,7 +9,7 @@
     <h2>Open Contests</h2>
     <dl>
       {% for contest in contests %}
-        <dt><a href="/contest/{{ contest.slug }}">{{ contest.title|escape }}</a></dt>
+        <dt><a href="/{{ contest.slug }}">{{ contest.title|escape }}</a></dt>
         <dd>{{ contest.description|escape }}</dd>
       {% endfor %}
     </dl>

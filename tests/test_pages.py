@@ -29,6 +29,17 @@ class RootTestCase(VotingTestCase):
         # Public, currently-open contests should be listed on the front page.
         self.check_shown(shown=True, public=True, closes=+1)
     
+    def test_public_link(self):
+        # Public, currently-open contests should have a valid link on the front page.
+        slug = "abcd"
+        title = "Yet another design contest"
+        closing = datetime.now() + timedelta(days=1)
+        Contest(slug=slug, title=title, public=True, closes=closing).put()
+        app = TestApp(application)
+        response = app.get("/")
+        response.click(title)
+        self.assertIn(title, response)
+    
     def test_nonpublic_unlisted(self):
         # Non-public contests should never appear on the front page.
         self.check_shown(shown=False, public=False)
