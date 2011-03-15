@@ -1,4 +1,5 @@
 from tests import VotingTestCase
+from voting import unwind
 from voting import *
 
 class MethodTestCase(VotingTestCase):
@@ -61,6 +62,57 @@ class MethodTestCase(VotingTestCase):
     
     def test_minimax(self):
         self.check_method(minimax)
+
+class CriterionTestCase(MethodTestCase):
+    r'''Base class for testing voting method criteria.
+        Each TestCase class presents a series of elections.
+        Subclasses need only override results, ballots, probably candidates,
+        and the check_results() function.
+        
+        This case simply tests that the results are always consistent.
+    '''#"""#'''
+    
+    candidates = {
+        0: "Best",
+        1: "Maybe",
+        2: "Possibly",
+        3: "Reviled",
+    }
+    
+    ballots = [
+        [
+            ([0, 1, 2, 3], 4),
+            ([0, 2, 1, 3], 3),
+            ([1, 0, 2, 3], 2),
+            ([2, 0, 1, 3], 1),
+        ],
+        [
+            ([0, 1, 2, 3], 4),
+            ([0, 2, 1, 3], 3),
+            ([1, 0, 2, 3], 2),
+            ([2, 0, 1, 3], 1),
+        ],
+    ]
+    
+    results = {
+        rankedpairs: True,
+        beatpath: True,
+        river: True,
+        instantrunoff: True,
+        plurality: True,
+        bucklin: True,
+        borda: True,
+        minimax: True,
+    }
+    
+    def check_results(self, results):
+        r'''Given a set of results, one per election, check the criterion.'''
+        return results[0] == results[1]
+    
+    def check_method(self, method):
+        result = self.check_results([list(method(election, self.candidates))
+                for election in self.ballots])
+        self.assertEqual(self.results[method], result)
 
 class TenesseeTestCase(MethodTestCase):
     r'''Hypothetical election to select a state capital.
@@ -156,58 +208,51 @@ class EqualRanksTestCase(MethodTestCase):
         minimax: [(0, 1), 2, 3],
     }
 
-class MonotonicityTestCase(MethodTestCase):
-    r'''First part of the test case for the Monotonicity Criterion:
+class MonotonicityTestCase(CriterionTestCase):
+    r'''Test case for the Monotonicity Criterion:
         http://en.wikipedia.org/wiki/Monotonicity_criterion
         
-        This is the original ballot, with three strong candidates.
+        A candidate should not be harmed by being raised on some ballots
+        without changing the orders of the other candidates.
+        
+        In this case, Andrea gets elected, serving well enough to collect the
+        top vote from ten of Belinda's original supporters.  That should help
+        Andrea secure the second election, but she loses under IRV.
     '''#"""#'''
     
     candidates = ["Andrea", "Belinda", "Cynthia"]
     
     ballots = [
-        (["Andrea", "Belinda", "Cynthia"], 39),
-        (["Belinda", "Cynthia", "Andrea"], 35),
-        (["Cynthia", "Andrea", "Belinda"], 26),
+        [
+            (["Andrea", "Belinda", "Cynthia"], 39),
+            (["Belinda", "Cynthia", "Andrea"], 35),
+            (["Cynthia", "Andrea", "Belinda"], 26),
+        ],
+        [
+            (["Andrea", "Belinda", "Cynthia"], 49),
+            (["Belinda", "Cynthia", "Andrea"], 25),
+            (["Cynthia", "Andrea", "Belinda"], 26),
+        ],
     ]
     
     results = {
-        rankedpairs: ["Andrea", "Belinda", "Cynthia"],
-        beatpath: ["Andrea", "Belinda", "Cynthia"],
-        river: ["Andrea", "Belinda", "Cynthia"],
-        instantrunoff: ["Andrea", "Belinda", "Cynthia"],
-        plurality: ["Andrea", "Belinda", "Cynthia"],
-        bucklin: ["Belinda", "Andrea", "Cynthia"],
-        borda: ["Belinda", "Andrea", "Cynthia"],
-        minimax: ["Andrea", "Belinda", "Cynthia"],
+        rankedpairs: True,
+        beatpath: True,
+        river: True,
+        instantrunoff: False,
+        plurality: True,
+        bucklin: True,
+        borda: True,
+        minimax: True,
     }
-
-class Monotonicity2TestCase(MonotonicityTestCase):
-    r'''Second part of the test case for the Monotonicity Criterion:
-        http://en.wikipedia.org/wiki/Monotonicity_criterion
+    
+    def check_results(self, results):
+        def position(result, candidate):
+            for n, rank in enumerate(unwind(result)):
+                if candidate in rank:
+                    return n
         
-        Andrea has served well, impressing ten of Belinda's supporters to
-        change their votes.  That shouldn't hurt Andrea, nor should it help
-        Belinda or Cynthia, but it does under IRV.
-        Plurality also presents an odd change.
-    '''#"""#'''
-    
-    ballots = [
-        (["Andrea", "Belinda", "Cynthia"], 49),
-        (["Belinda", "Cynthia", "Andrea"], 25),
-        (["Cynthia", "Andrea", "Belinda"], 26),
-    ]
-    
-    results = {
-        rankedpairs: ["Andrea", "Belinda", "Cynthia"],
-        beatpath: ["Andrea", "Belinda", "Cynthia"],
-        river: ["Andrea", "Belinda", "Cynthia"],
-        instantrunoff: ["Cynthia", "Andrea", "Belinda"],
-        plurality: ["Andrea", "Cynthia", "Belinda"],
-        bucklin: ["Andrea", "Belinda", "Cynthia"],
-        borda: ["Andrea", "Belinda", "Cynthia"],
-        minimax: ["Andrea", "Belinda", "Cynthia"],
-    }
+        return position(results[0], "Andrea") >= position(results[1], "Andrea")
 
 class PluralityTestCase(MethodTestCase):
     r'''Demonstration of severe vote-splitting.
