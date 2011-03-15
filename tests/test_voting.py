@@ -254,6 +254,57 @@ class MonotonicityTestCase(CriterionTestCase):
         
         return position(results[0], "Andrea") >= position(results[1], "Andrea")
 
+class ReversalTestCase(CriterionTestCase):
+    r'''Test case for the Reversal Symmetry Criterion:
+        http://en.wikipedia.org/wiki/Reversal_symmetry
+        
+        If a candidate is the unique winner, then that candidate must not win
+        an election in which each voter's preferences are inverted.
+    '''#"""#'''
+    
+    candidates = "ABCD"
+    
+    ballots = [
+        [
+            ("ABCD", 5),
+            ("BCDA", 4),
+            ("CDAB", 2),
+        ],
+        [
+            ("DCBA", 5),
+            ("ADCB", 4),
+            ("BADC", 2),
+        ],
+        [
+            ("ABC", 22),
+            ("ACB", 23),
+            ("BAC", 6),
+            ("BCA", 20),
+            ("CBA", 29),
+        ],
+        [
+            ("CBA", 22),
+            ("BCA", 23),
+            ("CAB", 6),
+            ("ACB", 20),
+            ("ABC", 29),
+        ],
+    ]
+    
+    results = {
+        rankedpairs: True,
+        beatpath: True,
+        river: True,
+        instantrunoff: False,
+        plurality: False,
+        bucklin: False,
+        borda: True,
+        minimax: False,
+    }
+    
+    def check_results(self, results):
+        return results[0][0] != results[1][0] and results[2][0] != results[3][0]
+
 class PluralityTestCase(MethodTestCase):
     r'''Demonstration of severe vote-splitting.
         http://fc.antioch.edu/~james_green-armytage/vm/survey.htm#plurality
