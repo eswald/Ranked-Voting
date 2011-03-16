@@ -10,6 +10,7 @@ r'''Ranked voting methods.
 
 from __future__ import division
 from collections import defaultdict
+from itertools import permutations
 
 __all__ = []
 
@@ -219,6 +220,16 @@ def regrouped(mapping, reverse=True):
     for value in sorted(counts, reverse=reverse):
         yield counts[value]
 
+def pairs(sequence):
+    r'''Yield each pair of the sequence exactly once, preserving order.
+        For example, if "A" follows "B" are in the sequence, the result
+        contains ("B", "A") somewhere, but not ("A", "B").
+    '''#"""#'''
+    items = list(sequence)
+    for b in xrange(1, len(items)):
+        for a in xrange(0, b):
+            yield items[a], items[b]
+
 @export
 def rankedpairs(votes, candidates):
     # Tideman method, using a graph of preferences data.
@@ -396,16 +407,6 @@ def beatpath(votes, candidates):
                 strength = path_strength
         return strength
     
-    def pairs(sequence):
-        r'''Yield each pair of the set exactly once.
-            For example, if "A" and "B" are both in the set,
-            yield either ("A", "B") or ("B", "A"), but not both.
-        '''#"""#'''
-        items = list(sequence)
-        for b in xrange(1, len(items)):
-            for a in xrange(0, b):
-                yield items[a], items[b]
-    
     final = Graph(candidates)
     for source, sink in pairs(candidates):
         major = beat_strength(sink, source)
@@ -438,4 +439,52 @@ def river(votes, candidates):
     while graph:
         winners = graph.pop()
         yield maybe_tuple(winners)
+
+@export
+def kemeny(votes, candidates):
+    # Kemeny-Young maximum likelihood method.
+    # http://en.wikipedia.org/wiki/Kemeny-Young_method
+    
+    if len(candidates) > 6:
+        # This calculation would take entirely too long.
+        # There are ways to optimize it, but they get a little nuts.
+        return [tuple(candidates)]
+    
+    comparisons = defaultdict(int)
+    for ranks, count in votes:
+        above = set()
+        for row in unwind(ranks):
+            for candidate in row:
+                for former in above:
+                    comparisons[former, candidate] += count
+            above.update(row)
+    
+    maximum = 0
+    finalists = []
+    for perm in permutations(candidates):
+        total = sum(comparisons[a, b] for a, b in pairs(perm))
+        if total > maximum:
+            maximum = total
+            finalists = [perm]
+        elif total == maximum:
+            finalists.append(perm)
+    
+    if len(finalists) == 1:
+        # Shortcut for an unambiguous result
+        result = list(finalists[0])
+    else:
+        # Collapse the ties.
+        ties = 0
+        tied = set()
+        result = []
+        for rank in range(len(candidates)):
+            winners = set(finalist[rank] for finalist in finalists)
+            ties += 1
+            tied.update(winners)
+            if len(tied) == ties:
+                result.append(maybe_tuple(tied))
+                ties = 0
+                tied = set()
+    
+    return result
 

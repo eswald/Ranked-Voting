@@ -33,6 +33,7 @@ class MethodTestCase(VotingTestCase):
         bucklin: [0, 1, 2, 3],
         borda: [0, 1, 2, 3],
         minimax: [0, 1, 2, 3],
+        kemeny: [0, 1, 2, 3],
     }
     
     def check_method(self, method):
@@ -62,6 +63,9 @@ class MethodTestCase(VotingTestCase):
     
     def test_minimax(self):
         self.check_method(minimax)
+    
+    def test_kemeny(self):
+        self.check_method(kemeny)
 
 class CriterionTestCase(MethodTestCase):
     r'''Base class for testing voting method criteria.
@@ -103,6 +107,7 @@ class CriterionTestCase(MethodTestCase):
         bucklin: True,
         borda: True,
         minimax: True,
+        kemeny: True,
     }
     
     def check_results(self, results):
@@ -151,6 +156,7 @@ class TenesseeTestCase(MethodTestCase):
         bucklin: ["Nashville", "Chattanooga", "Memphis", "Knoxville"],
         borda: ["Nashville", "Chattanooga", "Memphis", "Knoxville"],
         minimax: ["Nashville", "Chattanooga", "Knoxville", "Memphis"],
+        kemeny: ["Nashville", "Chattanooga", "Knoxville", "Memphis"],
     }
 
 class MajorityTestCase(MethodTestCase):
@@ -182,6 +188,7 @@ class MajorityTestCase(MethodTestCase):
         bucklin: ["Andrew", "Brian", "David", "Catherine"],
         borda: ["Catherine", "Andrew", "Brian", "David"],
         minimax: ["Andrew", "Catherine", "Brian", "David"],
+        kemeny: ["Andrew", "Catherine", "Brian", "David"],
     }
 
 class EqualRanksTestCase(MethodTestCase):
@@ -206,6 +213,7 @@ class EqualRanksTestCase(MethodTestCase):
         bucklin: [2, (0, 1), 3],
         borda: [2, 1, 0, 3],
         minimax: [(0, 1), 2, 3],
+        kemeny: [(0, 1), 2, 3],
     }
 
 class MonotonicityTestCase(CriterionTestCase):
@@ -244,6 +252,7 @@ class MonotonicityTestCase(CriterionTestCase):
         bucklin: True,
         borda: True,
         minimax: True,
+        kemeny: True,
     }
     
     def check_results(self, results):
@@ -300,6 +309,7 @@ class ReversalTestCase(CriterionTestCase):
         bucklin: False,
         borda: True,
         minimax: False,
+        kemeny: False,
     }
     
     def check_results(self, results):
@@ -329,6 +339,8 @@ class PluralityTestCase(MethodTestCase):
         ([8, (1, 2, 3, 4, 5, 6, 7), 0], 7),
     ]
     
+    # Kemeny-Young should have the commented-out result,
+    # but returns a full tie to avoid the massive computation.
     results = {
         rankedpairs: [1, 2, (3, 4, 5, 6), 7, 8, 0],
         beatpath: [1, 2, (3, 4, 5, 6), 7, 8, 0],
@@ -338,6 +350,8 @@ class PluralityTestCase(MethodTestCase):
         bucklin: [1, 2, (3, 4, 5, 6), 7, 8, 0],
         borda: [1, 2, (3, 4, 5, 6), 7, 8, 0],
         minimax: [1, 2, (3, 4, 5, 6), 7, 8, 0],
+        #kemeny: [1, 2, (3, 4, 5, 6), 7, 8, 0],
+        kemeny: [(0, 1, 2, 3, 4, 5, 6, 7, 8)],
     }
 
 class RunoffTestCase(MethodTestCase):
@@ -367,6 +381,7 @@ class RunoffTestCase(MethodTestCase):
         bucklin: [("Far Left", "Left"), ("Far Right", "Right")],
         borda: ["Left", "Right", "Far Left", "Far Right"],
         minimax: ["Left", "Far Left", "Right", "Far Right"],
+        kemeny: ["Left", "Far Left", "Right", "Far Right"],
     }
 
 class CondorcetTestCase(MethodTestCase):
@@ -397,6 +412,7 @@ class CondorcetTestCase(MethodTestCase):
         bucklin: ["Center", "Right", "Left"],
         borda: ["Center", "Right", "Left"],
         minimax: ["Center", "Right", "Left"],
+        kemeny: ["Center", "Right", "Left"],
     }
 
 class MinimaxTestCase(MethodTestCase):
@@ -425,6 +441,7 @@ class MinimaxTestCase(MethodTestCase):
         bucklin: ["Gore", "Nader", "Bush"],
         borda: ["Gore", "Nader", "Bush"],
         minimax: ["Gore", "Bush", "Nader"],
+        kemeny: ["Nader", "Gore", "Bush"],
     }
 
 class SmithSetTestCase(MethodTestCase):
@@ -457,6 +474,7 @@ class SmithSetTestCase(MethodTestCase):
         bucklin: ["C", ("A", "B"), "D"],
         borda: ["A", "C", "B", "D"],
         minimax: ["D", "A", "B", "C"],
+        kemeny: ["A", "B", "C", "D"],
     }
 
 class ClonesTestCase(MethodTestCase):
@@ -487,6 +505,7 @@ class ClonesTestCase(MethodTestCase):
         bucklin: ["R", "S", "T", "A"],
         borda: [("R", "S"), "A", "T"],
         minimax: ["A", "R", "S", "T"],
+        kemeny: [("A", "R", "S", "T")],
     }
 
 class BeatpathTestCase(MethodTestCase):
@@ -520,6 +539,7 @@ class BeatpathTestCase(MethodTestCase):
         bucklin: [("A", "B"), ("C", "D")],
         borda: ["A", "B", "C", "D"],
         minimax: ["A", "B", "C", "D"],
+        kemeny: ["B", "A", "C", "D"],
     }
 
 class PentagonTestCase(MethodTestCase):
@@ -560,6 +580,7 @@ class PentagonTestCase(MethodTestCase):
         bucklin: ["A", "B", "C", "D", "E"],
         borda: [("A", "B"), "D", "E", "C"],
         minimax: ["A", "B", ("D", "E"), "C"],
+        kemeny: ["A", "B", "D", "C", "E"],
     }
 
 class WholeRunoffTestCase(MethodTestCase):
@@ -592,6 +613,7 @@ class WholeRunoffTestCase(MethodTestCase):
         bucklin: ["B", "A", "C"],
         borda: ["B", "A", "C"],
         minimax: ["B", "A", "C"],
+        kemeny: ["B", "A", "C"],
     }
 
 class FractionalRunoffTestCase(MethodTestCase):
@@ -619,6 +641,7 @@ class FractionalRunoffTestCase(MethodTestCase):
         bucklin: ["A", ("B", "D"), "C"],
         borda: ["A", "B", "C", "D"],
         minimax: ["A", "B", "C", "D"],
+        kemeny: ["A", "B", "C", "D"],
     }
 
 class IncompleteTestCase(MethodTestCase):
@@ -644,6 +667,7 @@ class IncompleteTestCase(MethodTestCase):
         bucklin: ["B", "D", "A", "C", "E"],
         borda: ["A", "B", "D", "C", "E"],
         minimax: ["A", "B", "C", "D", "E"],
+        kemeny: ["A", "B", "C", "D", "E"],
     }
 
 class RiverTestCase(MethodTestCase):
@@ -684,6 +708,7 @@ class RiverTestCase(MethodTestCase):
         bucklin: ["C", "B", "A", "D"],
         borda: ["C", "B", "A", "D"],
         minimax: ["B", "C", "D", "A"],
+        kemeny: ["A", "B", "C", "D"],
     }
 
 class TiedTestCase(MethodTestCase):
@@ -710,6 +735,7 @@ class TiedTestCase(MethodTestCase):
         bucklin: [("Ryan", "Sara"), "Todd"],
         borda: [("Ryan", "Sara"), "Todd"],
         minimax: [("Ryan", "Sara"), "Todd"],
+        kemeny: [("Ryan", "Sara"), "Todd"],
     }
 
 class RoShamBoTestCase(MethodTestCase):
@@ -734,6 +760,7 @@ class RoShamBoTestCase(MethodTestCase):
         bucklin: [("Paper", "Rock", "Scissors")],
         borda: [("Paper", "Rock", "Scissors")],
         minimax: [("Paper", "Rock", "Scissors")],
+        kemeny: [("Paper", "Rock", "Scissors")],
     }
 
 class OctahedronTestCase(MethodTestCase):
@@ -762,6 +789,7 @@ class OctahedronTestCase(MethodTestCase):
         bucklin: ["A", ("B", "C", "D", "E"), "F"],
         borda: ["A", ("B", "C", "D", "E"), "F"],
         minimax: ["A", ("B", "C", "D", "E"), "F"],
+        kemeny: ["A", ("B", "C", "D", "E"), "F"],
     }
 
 class EqualWeightTestCase(MethodTestCase):
@@ -793,6 +821,7 @@ class EqualWeightTestCase(MethodTestCase):
         bucklin: [("A", "B", "C", "D", "E")],
         borda: ["A", ("B", "C", "D"), "E"],
         minimax: ["A", ("B", "C", "D", "E")],
+        kemeny: ["A", ("B", "C", "D"), "E"],
     }
 
 
