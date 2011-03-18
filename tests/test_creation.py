@@ -144,12 +144,12 @@ class SlugTestCase(VotingTestCase):
     
     def test_punctuation(self):
         # The slug should replace punctuation with hyphens.
-        request = "one and two, three and four; five"
+        request = "one and two, three/four; five"
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": request})
         fetched = Contest.all().fetch(1)[0]
-        self.assertEqual(fetched.slug, "one-and-two-three-and-four-five")
+        self.assertEqual(fetched.slug, "one-and-two-three-four-five")
     
     def test_trimmed(self):
         # Spaces and hyphens should be trimmed from the ends of the slug.
