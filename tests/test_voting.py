@@ -711,9 +711,45 @@ class RiverTestCase(MethodTestCase):
         kemeny: ["A", "B", "C", "D"],
     }
 
+class PairwiseTestCase(MethodTestCase):
+    r'''Demonstration of the differences between various pairwise methods.
+        http://www.cs.wustl.edu/~legrand/rbvote/desc.html
+        Everybody gets a chance here, in a very tight race.
+    '''#"""#'''
+    
+    candidates = ["Abby", "Brad", "Cora", "Dave", "Erin"]
+    
+    ballots = [
+        (["Abby", "Cora", "Erin", "Dave", "Brad"], 98),
+        (["Brad", "Abby", "Erin", "Cora", "Dave"], 64),
+        (["Brad", "Abby", "Erin", "Dave", "Cora"], 12),
+        (["Brad", "Erin", "Abby", "Cora", "Dave"], 98),
+        (["Brad", "Erin", "Abby", "Dave", "Cora"], 13),
+        (["Brad", "Erin", "Dave", "Abby", "Cora"], 125),
+        (["Cora", "Abby", "Erin", "Dave", "Brad"], 124),
+        (["Cora", "Erin", "Abby", "Dave", "Brad"], 76),
+        (["Dave", "Abby", "Brad", "Erin", "Cora"], 21),
+        (["Dave", "Brad", "Abby", "Erin", "Cora"], 30),
+        (["Dave", "Brad", "Erin", "Cora", "Abby"], 98),
+        (["Dave", "Cora", "Abby", "Brad", "Erin"], 139),
+        (["Dave", "Cora", "Brad", "Abby", "Erin"], 23),
+    ]
+    
+    results = {
+        rankedpairs: ["Brad", "Abby", "Erin", "Dave", "Cora"],
+        beatpath: ["Abby", "Brad", "Erin", "Dave", "Cora"],
+        river: ["Brad", "Abby", "Erin", "Dave", "Cora"],
+        instantrunoff: ["Dave", "Brad", "Cora", "Abby", "Erin"],
+        plurality: ["Brad", "Dave", "Cora", "Abby", "Erin"],
+        bucklin: ["Erin", "Abby", "Brad", "Cora", "Dave"],
+        borda: ["Abby", "Brad", "Cora", "Dave", "Erin"],
+        minimax: ["Cora", "Abby", "Brad", "Erin", "Dave"],
+        kemeny: ["Brad", "Abby", "Erin", "Dave", "Cora"],
+    }
+
 class TiedTestCase(MethodTestCase):
     r'''Demonstration of an undecidable election.
-        http://web.archive.org/web/20070220235817/http://cec.wustl.edu/~rhl1/rbvote/desc.html
+        http://www.cs.wustl.edu/~legrand/rbvote/desc.html
         Todd definitely loses, but there is no fair way to choose between Ryan and Sara.
     '''#"""#'''
     
