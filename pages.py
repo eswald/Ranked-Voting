@@ -56,7 +56,15 @@ class ListPage(Page):
         self.render("list.html", contests=current)
 
 class CreatePage(Page):
-    reserved = ["", "create", "save", "list", "admin"]
+    reserved = [
+        "",
+        "create",
+        "save",
+        "list",
+        "admin",
+        "static",
+        "favicon.ico",
+    ]
     
     def get(self):
         user = users.get_current_user()
