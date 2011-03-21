@@ -354,6 +354,39 @@ class PluralityTestCase(MethodTestCase):
         kemeny: [(0, 1, 2, 3, 4, 5, 6, 7, 8)],
     }
 
+class TeamingTestCase(MethodTestCase):
+    r'''Checking whether additional candidates can cause their team to win.
+        A should be the winner in an A/B/E race, but C and D are aligned with B.
+        Any method that allows B to win could cause headaches for voters.
+        Kemeny is an interesting case, in that the ballot truncation causes A's loss.
+    '''#"""#'''
+    
+    candidates = "ABCDE"
+    
+    ballots = [
+        ("ABCDE", 15),
+        ("AEBCD", 6),
+        ("AEB", 8),
+        ("BCDAE", 7),
+        ("CBDAE", 6),
+        ("BCDEA", 7),
+        ("DBCEA", 5),
+        ("EABCD", 11),
+        ("EBCDA", 10),
+    ]
+    
+    results = {
+        rankedpairs: ["A", "B", "C", "D", "E"],
+        beatpath: ["A", "B", "C", "D", "E"],
+        river: ["A", "B", "C", "D", "E"],
+        instantrunoff: ["A", "B", "E", "C", "D"],
+        plurality: ["A", "E", "B", "C", "D"],
+        bucklin: ["B", "A", "E", "C", "D"],
+        borda: ["B", "C", "A", "E", "D"],
+        minimax: ["A", "B", "C", "D", "E"],
+        kemeny: ["B", "C", "D", "A", "E"],
+    }
+
 class RunoffTestCase(MethodTestCase):
     r'''Demonstration of Instant runoff voting.
         http://fc.antioch.edu/~james_green-armytage/vm/survey.htm#irv
