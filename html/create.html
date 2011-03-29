@@ -1,20 +1,127 @@
 <html>
+  <head>
+    <style>
+      html, body, h1, form, fieldset, legend, ol, li {
+        margin: 0;
+        padding: 0;
+      }
+      
+      body {
+        background: #FFF;
+        color: #111;
+        padding: 20px;
+      }
+      
+      form {
+        background: #3CF;
+        -moz-border-radius: .7em;
+        -webkit-border-radius: .7em;
+        border-radius: .7em;
+        padding: 2em;
+        width: 30em;
+      }
+      
+      fieldset {
+        border: none;
+        margin-bottom: 3em;
+      }
+      
+      fieldset ol li {
+        list-style: none;
+        padding: .2em 2em;
+      }
+      
+      fieldset label {
+        float: left;
+        width: 7em;
+      }
+      
+      .button {
+        background: #363;
+        border: outset;
+        -moz-border-radius: 20px;
+        -webkit-border-radius: 20px;
+        -khtml-border-radius: 20px;
+        border-radius: 20px;
+        color: #FFF;
+        display: block;
+        font: serif;
+        letter-spacing: 1px;
+        margin: auto;
+        padding: 7px 25px;
+        text-shadow: 0 1px 1px #000;
+      }
+      
+      .button:hover {
+        background: #474;
+        cursor: pointer;
+      }
+      
+      .button:active {
+        border: inset;
+      }
+      
+      footer {
+        display: block;
+        border-top: 2px groove;
+        margin-top: 1em;
+      }
+    </style>
+  </head>
   <body>
     <p>Hello, {{ user.nickname }}!</p>   
     <form action="/create" method="post">
-      <table>
-        <tr><td>Title</td><td><input type="text" name="title"></td></tr>
-        <tr><td>Slug</td><td><input type="text" name="slug"></td></tr>
-        <tr><td>Description</td><td><textarea name="description">A short description for the front page.</textarea></td></tr>
-        <tr><td>Public</td><td><input type="checkbox" name="public" value="1">List this contest on the front page.</td></tr>
-      </table>
-      <input type="submit" value="Submit">
-      <hr>
+      <fieldset>
+        <legend>Contest information</legend>
+        <ol>
+          <li>
+            <label for="title">Title</label>
+            <input type="text" name="title" id="title" autofocus>
+          </li>
+          <li>
+            <label for="slug">Slug</label>
+            <input type="text" name="slug" id="slug" required>
+          </li>
+          <li>
+            <label for="c1_description">Description</label>
+            <textarea name="c1_description" id="c1_description"
+                placeholder="A short description for the front page."></textarea>
+          </li>
+          <li>
+            <label for="public">Public</label>
+            <input type="checkbox" name="public" id="public" value="1">
+            List this contest on the front page.
+          </li>
+        </ol>
+      </fieldset>
+      
+      <h2>Candidates</h2>
+      <fieldset>
+        <legend>Candidate 1</legend>
+        <ol>
+          <li>
+            <label for="c1_label">Label</label>
+            <input type="text" name="c1_label" id="c1_label" required>
+          </li>
+          <li>
+            <label for="c1_color">Color</label>
+            <input type="color" name="c1_color" id="c1_color">
+          </li>
+          <li>
+            <label for="c1_description">Description</label>
+            <textarea name="c1_description" id="c1_description"></textarea>
+          </li>
+        </ol>
+      </fieldset>
+      
+      <input type="submit" value="Submit" class="button">
+    </form>
+    <footer>
       <p>Your use of this service is subject to
         <a href="http://code.google.com/appengine/program_policies.html">Google's program policies</a>.
         If submitted content is found to be in violation of these policies, it
         may be deleted at any time.
       </p>
-    </form>
+    </footer>
   </body>
 </html>
