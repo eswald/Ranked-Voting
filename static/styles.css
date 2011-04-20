@@ -9,28 +9,37 @@ body {
 	padding: 20px;
 }
 
-form {
+form.bubble {
 	background: #3CF;
 	-moz-border-radius: .7em;
 	-webkit-border-radius: .7em;
 	border-radius: .7em;
 	padding: 2em;
-	width: 30em;
+	width: 40em;
 }
 
-fieldset {
+form.bubble fieldset {
 	border: none;
 	margin-bottom: 1em;
 }
 
-fieldset ol li {
+li.formrow {
 	list-style: none;
 	padding: .2em 2em;
 }
 
-fieldset label {
+li.formrow label {
 	float: left;
 	width: 7em;
+}
+
+li.formtext {
+	list-style: none;
+	padding: .2em 2em;
+}
+
+li.formtext label {
+	display: block;
 }
 
 .button {
