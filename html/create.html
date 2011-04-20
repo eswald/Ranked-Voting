@@ -2,54 +2,42 @@
   <head>
     <title>New Contest Creation</title>
     <link rel="stylesheet" type="text/css" href="/static/styles.css">
+    <link rel="stylesheet" type="text/css" href="/static/wmd/wmd.css">
+    <script type="text/javascript" src="/static/wmd/showdown.js"></script>
   </head>
   <body>
-    <p>Hello, {{ user.nickname }}!</p>   
-    <form action="/create" method="post">
+    <form action="/create" method="post" class="bubble">
       <fieldset>
         <legend>Contest information</legend>
         <ol>
-          <li>
-            <label for="title">Title</label>
-            <input type="text" name="title" id="title" autofocus>
+          <li class="formrow">
+            <label for="title" accesskey="t">Title</label>
+            <input type="text" name="title" id="title" autofocus
+              placeholder="Name of the contest">
           </li>
-          <li>
-            <label for="slug">Slug</label>
-            <input type="text" name="slug" id="slug" required>
+          <li class="formrow">
+            <label for="slug" accesskey="s">Slug</label>
+            <input type="text" name="slug" id="slug" required
+              placeholder="Unique identifier for the URL">
           </li>
-          <li>
-            <label for="description">Description</label>
-            <textarea name="description" id="description"
-                placeholder="A short description for the front page."></textarea>
-          </li>
-          <li>
-            <label for="public">Public</label>
+          <li class="formrow">
+            <label for="public" accesskey="p">Public</label>
             <input type="checkbox" name="public" id="public" value="1">
             List this contest on the front page.
           </li>
-        </ol>
-      </fieldset>
-      
-      <h2>Candidates</h2>
-      <fieldset>
-        <legend>Candidate 1</legend>
-        <ol>
-          <li>
-            <label for="c1_label">Label</label>
-            <input type="text" name="c1_label" id="c1_label" required>
-          </li>
-          <li>
-            <label for="c1_color">Color</label>
-            <input type="color" name="c1_color" id="c1_color">
-          </li>
-          <li>
-            <label for="c1_description">Description</label>
-            <textarea name="c1_description" id="c1_description"></textarea>
+          <li class="formtext">
+            <label for="description" accesskey="d">Description</label>
+            <div id="wmd-button-bar" class="wmd-panel"></div>
+            <textarea name="description" id="wmd-input" class="wmd-panel"
+                placeholder="A short description for the front page."></textarea>
+            <div id="wmd-preview" class="wmd-panel"></div>
+            <div id="wmd-output" class="wmd-panel"></div>
           </li>
         </ol>
       </fieldset>
       
       <input type="submit" value="Submit" class="button">
+      <script type="text/javascript" src="/static/wmd/wmd.js"></script>
     </form>
     <footer>
       <p>Your use of this service is subject to
