@@ -1,0 +1,65 @@
+html, body, h1, form, fieldset, legend, ol, li {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background: #FFF;
+	color: #111;
+	padding: 20px;
+}
+
+form {
+	background: #3CF;
+	-moz-border-radius: .7em;
+	-webkit-border-radius: .7em;
+	border-radius: .7em;
+	padding: 2em;
+	width: 30em;
+}
+
+fieldset {
+	border: none;
+	margin-bottom: 1em;
+}
+
+fieldset ol li {
+	list-style: none;
+	padding: .2em 2em;
+}
+
+fieldset label {
+	float: left;
+	width: 7em;
+}
+
+.button {
+	background: #363;
+	border: outset;
+	-moz-border-radius: 20px;
+	-webkit-border-radius: 20px;
+	-khtml-border-radius: 20px;
+	border-radius: 20px;
+	color: #FFF;
+	display: block;
+	font: serif;
+	letter-spacing: 1px;
+	margin: auto;
+	padding: 7px 25px;
+	text-shadow: 0 1px 1px #000;
+}
+
+.button:hover {
+	background: #474;
+	cursor: pointer;
+}
+
+.button:active {
+	border: inset;
+}
+
+footer {
+	display: block;
+	border-top: 2px groove;
+	margin-top: 1em;
+}
