@@ -1,3 +1,4 @@
 This package is made available under the PSF license.
 The dateutil module was written by Gustavo Niemeyer <gustavo@niemeyer.net>.
+The WMD and Showdown scripts were written by John Fraser, John Gruber, and others.
 Everything else was written by Eric Wald <eswald@gmail.com>
