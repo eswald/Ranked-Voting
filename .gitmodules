@@ -1,0 +1,3 @@
+[submodule "wmd"]
+	path = wmd
+	url = git://github.com/ChiperSoft/wmd.git

@@ -3,7 +3,7 @@
     <title>New Contest Creation</title>
     <link rel="stylesheet" type="text/css" href="/static/styles.css">
     <link rel="stylesheet" type="text/css" href="/static/wmd/wmd.css">
-    <script type="text/javascript" src="/static/wmd/showdown.js"></script>
+    <script type="text/javascript" src="/static/wmd/wmd.combined.min.js"></script>
   </head>
   <body>
     <form action="/create" method="post" class="bubble">
@@ -27,17 +27,25 @@
           </li>
           <li class="formtext">
             <label for="description" accesskey="d">Description</label>
-            <div id="wmd-button-bar" class="wmd-panel"></div>
-            <textarea name="description" id="wmd-input" class="wmd-panel"
-                placeholder="A short description for the front page."></textarea>
-            <div id="wmd-preview" class="wmd-panel"></div>
-            <div id="wmd-output" class="wmd-panel"></div>
+            <div class="wmd-wrapper">
+              <div id="wmd-button-bar"></div>
+              <textarea name="description" id="description" rows="5"
+                  placeholder="A short description for the front page."></textarea>
+              <div id="wmd-preview"></div>
+            </div>
           </li>
         </ol>
       </fieldset>
       
       <input type="submit" value="Submit" class="button">
-      <script type="text/javascript" src="/static/wmd/wmd.js"></script>
+      <script type="text/javascript">
+        setup_wmd({
+          input: "description",
+          button_bar: "wmd-button-bar",
+          preview: "wmd-preview",
+          output: "wmd-output"
+        })
+      </script>
     </form>
     <footer>
       <p>Your use of this service is subject to

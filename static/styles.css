@@ -67,6 +67,10 @@ li.formtext label {
 	border: inset;
 }
 
+#description {
+	width: 90%;
+}
+
 footer {
 	display: block;
 	border-top: 2px groove;
