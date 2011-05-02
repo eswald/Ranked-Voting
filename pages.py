@@ -157,9 +157,19 @@ class EntryPage(Page):
 
 class VotePage(Page):
     def get(self):
+        contest = self.contest()
+        if not contest:
+            return
+        user = users.get_current_user()
+        entries = db.GqlQuery("SELECT * FROM Entry WHERE ANCESTOR IS :1", contest)
+        ranks = [[], entries, []]
+        self.render("vote.html", contest=contest, ranks=ranks)
+    
+    def post(self):
+        contest = self.contest()
         user = users.get_current_user()
         self.response.headers['Content-Type'] = 'text/plain'
-        self.echo('Hello, %s!\n', user.nickname())
+        self.echo('Form: %r', self.request.params)
 
 class ContestPage(Page):
     def get(self):
@@ -173,6 +183,7 @@ application = webapp.WSGIApplication([
         ("/create", CreatePage),
         ("/list", ListPage),
         ("/[\w.-]+/entry", EntryPage),
+        ("/[\w.-]+/vote", VotePage),
         ("/[\w.-]+", ContestPage),
 ], debug=True)
 

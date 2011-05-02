@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <title>{{ contest.title|escape }}</title>
+    <link rel="stylesheet" type="text/css" href="/static/styles.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/jquery-ui.min.js"></script>
+  </head>
+  <body>
+    <h1>{{ contest.title|escape }}</h1>
+    <p>{{ contest.description }}</p>
+    <form action="/{{ contest.slug }}/vote" method="post">
+      <div class="choices">
+        {% for rank in ranks %}
+          <div id="rank{{ forloop.counter }}" class="ranking">
+            {% for entry in rank %}
+              <span class="option">
+                {{ entry.title|escape }}
+                <input type="hidden" name="{{ entry.key|escape }}" value="{{ forloop.parentloop.counter }}">
+              </span>
+            {% endfor %}
+          </div>
+          <script type="text/javascript">
+            <!--
+            $(function() {
+              $("#rank{{ forloop.counter }}").sortable({
+                connectWith: ".ranking",
+                receive: function(event, ui) {
+                  ui.item.find('input').val({{ forloop.counter }});
+                }
+              }).disableSelection();
+            });
+            //-->
+          </script>
+        {% endfor %}
+      </div>
+      <input type="submit" value="Submit" class="button">
+    </form>
+  </body>
+</html>
