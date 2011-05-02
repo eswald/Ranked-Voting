@@ -1,29 +1,9 @@
 <html>
   <head>
     <title>{{ contest.title|escape }}</title>
+    <link rel="stylesheet" type="text/css" href="/static/styles.css">
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/jquery-ui.min.js"></script>
-    <style>
-      <!--
-      .option {
-        border-radius: 1em;
-        padding: .2em .5em;
-        border: 1px solid red;
-        background: #FCC;
-        margin: .1em;
-      }
-      
-      .ranking {
-        padding: .3em;
-        margin: 0;
-        border-top: .2em solid #CCC;
-      }
-      
-      .choices {
-        border-bottom: .2em solid #CCC;
-      }
-      -->
-    </style>
   </head>
   <body>
     <h1>{{ contest.title|escape }}</h1>

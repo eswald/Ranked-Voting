@@ -9,6 +9,25 @@ body {
 	padding: 20px;
 }
 
+.option {
+	border-radius: 1em;
+	padding: .2em .5em;
+	border: 1px solid red;
+	background: #FCC;
+	margin: .1em;
+}
+
+.ranking {
+	padding: .3em;
+	margin: 0;
+	border-top: .2em solid #CCC;
+}
+
+.choices {
+	border-bottom: .2em solid #CCC;
+	margin-bottom: 1em;
+}
+
 form.bubble {
 	background: #3CF;
 	-moz-border-radius: .7em;

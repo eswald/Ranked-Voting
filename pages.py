@@ -21,11 +21,9 @@ class Contest(db.Model):
     public = db.BooleanProperty(default=False)
 
 class Entry(db.Model):
-    contest = db.ReferenceProperty(Contest)
     sequence = db.IntegerProperty()
     title = db.StringProperty()
-    url = db.StringProperty()
-    votes = db.ListProperty(long)
+    description = db.StringProperty(multiline=True)
 
 class Vote(db.Model):
     contest = db.ReferenceProperty(Contest)
@@ -43,6 +41,16 @@ class Page(webapp.RequestHandler):
     def render(self, template_name, **values):
         path = join(self.template_directory, template_name)
         self.response.out.write(template.render(path, values))
+    
+    def contest(self):
+        slug = self.request.url.split("/")[3]
+        query = Contest.gql("WHERE slug = :1 LIMIT 1", slug)
+        try:
+            contest = query[0]
+        except IndexError:
+            self.response.set_status(404, 'Not Found')
+            contest = None
+        return contest
 
 class MainPage(Page):
     def get(self):
@@ -109,6 +117,44 @@ class CreatePage(Page):
         slug = sub(r"[^a-z.0-9]+", "-", request.lower())
         return slug.strip("-")
 
+class EntryPage(Page):
+    def get(self):
+        contest = self.contest()
+        if not contest:
+            return
+        
+        try:
+            entries = db.GqlQuery("SELECT * FROM Entry WHERE ANCESTOR IS :1", contest)
+        except db.KindError:
+            entries = []
+        
+        self.render("newentry.html", contest=contest, options=entries)
+    
+    def post(self):
+        contest = self.contest()
+        if not contest:
+            return
+        
+        try:
+            entry = Entry(parent=contest)
+            
+            entry.title = self.request.get("title").strip()
+            entry.description = self.request.get("description").strip()
+            
+            # Collect the sequence as the absolute last thing before
+            # inserting, for slightly better protection.
+            # Consider rolling back on duplicate sequences.
+            try:
+                others = db.GqlQuery("SELECT __key__ FROM Entry WHERE ANCESTOR IS :1", contest)
+            except db.KindError:
+                others = []
+            entry.sequence = len(list(others)) + 1
+            entry.put()
+            self.redirect("/%s/entry" % contest.slug)
+        except Exception as err:
+            self.render("newentry.html", contest=contest, options=[], defaults=entry, error=err)
+            raise
+
 class VotePage(Page):
     def get(self):
         user = users.get_current_user()
@@ -117,12 +163,8 @@ class VotePage(Page):
 
 class ContestPage(Page):
     def get(self):
-        slug = self.request.url.split("/")[3]
-        query = Contest.gql("WHERE slug = :1 LIMIT 1", slug)
-        try:
-            contest = query[0]
-        except IndexError:
-            self.response.set_status(404, 'Not Found')
+        contest = self.contest()
+        if not contest:
             return
         self.render("contest.html", contest=contest)
 
@@ -130,6 +172,7 @@ application = webapp.WSGIApplication([
         ("/", MainPage),
         ("/create", CreatePage),
         ("/list", ListPage),
+        ("/[\w.-]+/entry", EntryPage),
         ("/[\w.-]+", ContestPage),
 ], debug=True)
 
