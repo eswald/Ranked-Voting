@@ -1,6 +1,7 @@
 import logging
 from re import sub
 from os.path import dirname, join
+from collections import defaultdict
 from datetime import datetime, timedelta
 from dateutil.parser import parser as date_parser
 
@@ -26,9 +27,8 @@ class Entry(db.Model):
     description = db.StringProperty(multiline=True)
 
 class Vote(db.Model):
-    contest = db.ReferenceProperty(Contest)
-    voter = db.UserProperty()
-    ranks = db.ListProperty(long)
+    voter = db.UserProperty(required=True)
+    ranks = db.StringProperty(required=True)
     created = db.DateTimeProperty(auto_now_add=True)
     modified = db.DateTimeProperty(auto_now_add=True)
 
@@ -168,8 +168,18 @@ class VotePage(Page):
     def post(self):
         contest = self.contest()
         user = users.get_current_user()
-        self.response.headers['Content-Type'] = 'text/plain'
-        self.echo('Form: %r', self.request.params)
+        
+        # Parse the form input into a reasonable vote set.
+        ranks = defaultdict(set)
+        for entry in self.request.params:
+            rank = self.request.get(entry)
+            ranks[rank].add(entry)
+        ranked = ";".join(",".join(sorted(ranks[key])) for key in sorted(ranks))
+        
+        # Todo: Update an existing row, if available.
+        vote = Vote(parent=contest, voter=user, ranks=ranked)
+        vote.put()
+        self.redirect("/%s/results" % contest.slug)
 
 class ContestPage(Page):
     def get(self):
