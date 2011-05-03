@@ -257,7 +257,7 @@ class MonotonicityTestCase(CriterionTestCase):
     
     def check_results(self, results):
         def position(result, candidate):
-            for n, rank in enumerate(unwind(result)):
+            for n, rank in enumerate(unwind(result, self.candidates)):
                 if candidate in rank:
                     return n
         
@@ -893,4 +893,29 @@ class EqualWeightTestCase(MethodTestCase):
         kemeny: ["A", ("B", "C", "D"), "E"],
     }
 
+class DeletedCandidateTestCase(MethodTestCase):
+    r'''Voting methods should ignore ranked items that aren't in the candidate set.
+        This allows candidates to be deleted without having to change all previous ballots.
+    '''#"""#'''
+    
+    candidates = "ABC"
+    
+    ballots = [
+        ("ABCD", 9),
+        ("CABD", 8),
+        ("DABC", 7),
+        ("BDCA", 6),
+    ]
+    
+    results = {
+        rankedpairs: ["A", "B", "C"],
+        beatpath: ["A", "B", "C"],
+        river: ["A", "B", "C"],
+        instantrunoff: ["A", "B", "C"],
+        plurality: ["A", "C", "B"],
+        bucklin: ["A", "C", "B"],
+        borda: ["A", "B", "C"],
+        minimax: ["A", "B", "C"],
+        kemeny: ["A", "B", "C"],
+    }
 

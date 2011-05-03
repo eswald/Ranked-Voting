@@ -24,12 +24,14 @@ def maybe_tuple(items):
         result = result[0]
     return result
 
-def unwind(ranks):
+def unwind(ranks, candidates):
+    candidates = set(candidates)
     for row in ranks:
-        if isinstance(row, (tuple, set)):
-            yield set(row)
-        else:
-            yield set([row])
+        if not isinstance(row, (tuple, set)):
+            row = [row]
+        rank = set(row) & candidates
+        if rank:
+            yield rank
 
 class Graph(object):
     r'''Basic graph structure.
@@ -186,7 +188,7 @@ class Graph(object):
         '''#"""#'''
         return bool(self.vertices)
 
-def pairwise(votes):
+def pairwise(votes, candidates):
     r'''Collects pairwise majorities from the ballots.
         Returns a dictionary of (winner, loser) => (major, minor),
         suitable for passing into regrouped().
@@ -194,7 +196,7 @@ def pairwise(votes):
     comparisons = defaultdict(int)
     for ranks, count in votes:
         above = set()
-        for row in unwind(ranks):
+        for row in unwind(ranks, candidates):
             for candidate in row:
                 for former in above:
                     comparisons[former, candidate] += count
@@ -235,7 +237,7 @@ def rankedpairs(votes, candidates):
     # Tideman method, using a graph of preferences data.
     # Modified by ignoring unstated candidates, instead of
     # assuming that they're all worse than the ranked ones.
-    majorities = pairwise(votes)
+    majorities = pairwise(votes, candidates)
     graph = Graph(candidates)
     for rank in regrouped(majorities):
         graph.acyclic_edges(rank)
@@ -256,14 +258,12 @@ def instantrunoff(votes, candidates):
     while candidates:
         totals = dict.fromkeys(candidates, 0)
         for ranks, count in votes:
-            for row in unwind(ranks):
-                possible = row & candidates
-                if possible:
-                    # Divide the votes evenly among the preferences.
-                    value = count / len(possible)
-                    for candidate in possible:
-                        totals[candidate] += value
-                    break
+            for row in unwind(ranks, candidates):
+                # Divide the votes evenly among the preferences.
+                value = count / len(row)
+                for candidate in row:
+                    totals[candidate] += value
+                break
         
         counts = defaultdict(set)
         for key in totals:
@@ -290,11 +290,11 @@ def plurality(votes, candidates):
     # Only the top preference is even looked at.
     totals = dict.fromkeys(candidates, 0)
     for ranks, count in votes:
-        for row in unwind(ranks):
+        for row in unwind(ranks, candidates):
             value = count / len(row)
             for candidate in row:
                 totals[candidate] += value
-            break;
+            break
     
     return [maybe_tuple(rank) for rank in regrouped(totals)]
 
@@ -307,14 +307,14 @@ def borda(votes, candidates):
     for ranks, count in votes:
         # First, subtract points for each candidate ranked higher.
         seen = 0
-        for row in unwind(ranks):
+        for row in unwind(ranks, candidates):
             value = count * seen
             seen += len(row)
             for candidate in row:
                 ratings[candidate] -= value
         
         # Second, add points for each candidate ranked lower.
-        for row in unwind(ranks):
+        for row in unwind(ranks, candidates):
             seen -= len(row)
             value = count * seen
             for candidate in row:
@@ -332,7 +332,7 @@ def bucklin(votes, candidates):
         totals = dict.fromkeys(candidates, 0)
         for ranks, count in votes:
             seen = 0
-            for row in unwind(ranks):
+            for row in unwind(ranks, candidates):
                 if len(row) > n - seen:
                     # Divide the votes evenly among the preferences.
                     # Letting each one count fully would let some ballots
@@ -367,7 +367,7 @@ def minimax(votes, candidates):
     # Minimax / Successive reversal / Simpson method.
     # Using rankings, select unbeaten candidates.
     # If there aren't any, drop the weakest wins.
-    majorities = pairwise(votes)
+    majorities = pairwise(votes, candidates)
     graph = Graph(candidates)
     for a, b in majorities:
         graph.edge(a, b)
@@ -385,7 +385,7 @@ def minimax(votes, candidates):
 @export
 def beatpath(votes, candidates):
     # Schulze method, equivalent to Cloneproof Schwartz Sequential Dropping.
-    majorities = pairwise(votes)
+    majorities = pairwise(votes, candidates)
     graph = Graph(candidates)
     for a, b in majorities:
         graph.edge(a, b)
@@ -424,7 +424,7 @@ def beatpath(votes, candidates):
 def river(votes, candidates):
     # A compromize between Beatpath and Ranked Pairs
     # http://web.archive.org/web/20071031155527/http://lists.electorama.com/pipermail/election-methods-electorama.com/2004-October/013971.html
-    majorities = pairwise(votes)
+    majorities = pairwise(votes, candidates)
     graph = Graph(candidates)
     retries = []
     for rank in regrouped(majorities):
@@ -453,7 +453,7 @@ def kemeny(votes, candidates):
     comparisons = defaultdict(int)
     for ranks, count in votes:
         above = set()
-        for row in unwind(ranks):
+        for row in unwind(ranks, candidates):
             for candidate in row:
                 for former in above:
                     comparisons[former, candidate] += count
