@@ -919,3 +919,30 @@ class DeletedCandidateTestCase(MethodTestCase):
         kemeny: ["A", "B", "C"],
     }
 
+class NewCandidateTestCase(MethodTestCase):
+    r'''Voting methods should handle new candidates after votes have been cast.
+        The question is whether they handle them first, last, or in the middle.
+        Then there's Kemeny, which completely refuses to decide...
+    '''#"""#'''
+    
+    candidates = "ABCDE"
+    
+    ballots = [
+        ("ABCD", 9),
+        ("BADC", 8),
+        ("CADB", 7),
+        ("DBCA", 6),
+    ]
+    
+    results = {
+        rankedpairs: [("A", "E"), "B", "C", "D"],
+        beatpath: [("A", "E"), "B", "C", "D"],
+        river: [("A", "E"), "B", "C", "D"],
+        instantrunoff: ["A", "B", "C", "D", "E"],
+        plurality: ["A", "B", "C", "D", "E"],
+        bucklin: ["A", "B", "C", "D", "E"],
+        borda: ["A", "B", "E", "C", "D"],
+        minimax: [("A", "E"), "B", "C", "D"],
+        kemeny: [("A", "B", "C", "D", "E")],
+    }
+
