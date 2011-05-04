@@ -1,27 +1,27 @@
 <html>
   <head>
-    <title>{{ election.title|escape }}: New Entry</title>
+    <title>{{ election.title|escape }}: New Candidate</title>
     <link rel="stylesheet" type="text/css" href="/static/styles.css">
     <link rel="stylesheet" type="text/css" href="/static/wmd/wmd.css">
     <script type="text/javascript" src="/static/wmd/wmd.combined.min.js"></script>
   </head>
   <body>
-    <h1>New entry for {{ election.title|escape }}</h1>
+    <h1>New candidate for {{ election.title|escape }}</h1>
     <div class="choices">
       <div class="ranking">
-        {% for option in options %}
-          <span class="option">{{ option.title|escape }}</span>
+        {% for candidate in candidates %}
+          <span class="candidate">{{ candidate.title|escape }}</span>
         {% endfor %}
       </div>
     </div>
-    <form action="/{{ election.slug }}/entry" method="post" class="bubble">
+    <form action="/{{ election.slug }}/candidate" method="post" class="bubble">
       <fieldset>
-        <legend>Entry information</legend>
+        <legend>Candidate information</legend>
         <ol>
           <li class="formrow">
             <label for="title" accesskey="t">Title</label>
             <input type="text" name="title" id="title" autofocus
-              placeholder="Name of the entry">
+              placeholder="Name of the candidate">
           </li>
           <li class="formtext">
             <label for="description" accesskey="d">Description</label>

@@ -21,7 +21,7 @@ class Election(db.Model):
     closes = db.DateTimeProperty()
     public = db.BooleanProperty(default=False)
 
-class Entry(db.Model):
+class Candidate(db.Model):
     title = db.StringProperty()
     description = db.StringProperty(multiline=True)
 
@@ -116,18 +116,18 @@ class CreatePage(Page):
         slug = sub(r"[^a-z.0-9]+", "-", request.lower())
         return slug.strip("-")
 
-class EntryPage(Page):
+class CandidatePage(Page):
     def get(self):
         election = self.election()
         if not election:
             return
         
         try:
-            entries = db.GqlQuery("SELECT * FROM Entry WHERE ANCESTOR IS :1", election)
+            candidates = db.GqlQuery("SELECT * FROM Candidate WHERE ANCESTOR IS :1", election)
         except db.KindError:
-            entries = []
+            candidates = []
         
-        self.render("candidate.html", election=election, options=entries)
+        self.render("candidate.html", election=election, candidates=candidates)
     
     def post(self):
         election = self.election()
@@ -135,15 +135,15 @@ class EntryPage(Page):
             return
         
         try:
-            entry = Entry(parent=election)
+            candidate = Candidate(parent=election)
             
-            entry.title = self.request.get("title").strip()
-            entry.description = self.request.get("description").strip()
+            candidate.title = self.request.get("title").strip()
+            candidate.description = self.request.get("description").strip()
             
-            entry.put()
-            self.redirect("/%s/entry" % election.slug)
+            candidate.put()
+            self.redirect("/%s/candidate" % election.slug)
         except Exception as err:
-            self.render("candidate.html", election=election, options=[], defaults=entry, error=err)
+            self.render("candidate.html", election=election, candidates=[], defaults=candidate, error=err)
             raise
 
 class VotePage(Page):
@@ -152,8 +152,8 @@ class VotePage(Page):
         if not election:
             return
         user = users.get_current_user()
-        entries = db.GqlQuery("SELECT * FROM Entry WHERE ANCESTOR IS :1", election)
-        ranks = [[], entries, []]
+        candidates = db.GqlQuery("SELECT * FROM Candidate WHERE ANCESTOR IS :1", election)
+        ranks = [[], candidates, []]
         self.render("vote.html", election=election, ranks=ranks)
     
     def post(self):
@@ -162,9 +162,9 @@ class VotePage(Page):
         
         # Parse the form input into a reasonable vote set.
         ranks = defaultdict(set)
-        for entry in self.request.params:
-            rank = self.request.get(entry)
-            ranks[rank].add(entry)
+        for candidate in self.request.params:
+            rank = self.request.get(candidate)
+            ranks[rank].add(candidate)
         ranked = ";".join(",".join(sorted(ranks[key])) for key in sorted(ranks))
         
         # Todo: Update an existing row, if available.
@@ -183,7 +183,7 @@ application = webapp.WSGIApplication([
         ("/", MainPage),
         ("/create", CreatePage),
         ("/list", ListPage),
-        ("/[\w.-]+/entry", EntryPage),
+        ("/[\w.-]+/candidate", CandidatePage),
         ("/[\w.-]+/vote", VotePage),
         ("/[\w.-]+", ElectionPage),
 ], debug=True)
