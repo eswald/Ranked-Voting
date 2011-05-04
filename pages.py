@@ -14,7 +14,6 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 class Election(db.Model):
     creator = db.UserProperty()
     title = db.StringProperty()
-    slug = db.StringProperty()
     description = db.StringProperty(multiline=True)
     created = db.DateTimeProperty(auto_now_add=True)
     starts = db.DateTimeProperty(auto_now_add=True)
@@ -26,7 +25,7 @@ class Candidate(db.Model):
     description = db.StringProperty(multiline=True)
 
 class Vote(db.Model):
-    election = db.ReferenceProperty(Contest, required=True)
+    election = db.ReferenceProperty(Election, required=True)
     voter = db.UserProperty(required=True)
     ranks = db.StringProperty(required=True)
     created = db.DateTimeProperty(auto_now_add=True)
@@ -44,12 +43,9 @@ class Page(webapp.RequestHandler):
     
     def election(self):
         slug = self.request.url.split("/")[3]
-        query = Election.gql("WHERE slug = :1 LIMIT 1", slug)
-        try:
-            election = query[0]
-        except IndexError:
+        election = Election.get_by_key_name(slug)
+        if election is None:
             self.response.set_status(404, 'Not Found')
-            election = None
         return election
 
 class MainPage(Page):
@@ -79,14 +75,15 @@ class CreatePage(Page):
         self.render("create.html", user=user)
     
     def post(self):
+        election = None
         try:
-            election = Election()
+            slug = self._slugify(self.request.get("slug"))
+            assert slug not in self.reserved
+            
+            election = Election(key_name=slug)
             election.creator = users.get_current_user()
             
-            election.slug = self._slugify(self.request.get("slug"))
-            assert election.slug not in self.reserved
-            
-            election.title = self.request.get("title").strip() or election.slug
+            election.title = self.request.get("title").strip() or slug
             election.public = bool(self.request.get("public"))
             
             default = "Created by " + election.creator.nickname()
@@ -107,7 +104,7 @@ class CreatePage(Page):
             # Check for duplication as the absolute last thing before
             # inserting, for slightly better protection.
             # Consider rolling back if there are two of them after inserting.
-            assert not list(db.GqlQuery("SELECT __key__ FROM Election WHERE slug = :1 LIMIT 1", election.slug))
+            assert not Election.get_by_key_name(slug)
             election.put()
             self.redirect("/")
         except Exception as err:
@@ -142,7 +139,7 @@ class CandidatePage(Page):
             candidate.description = self.request.get("description").strip()
             
             candidate.put()
-            self.redirect("/%s/candidate" % election.slug)
+            self.redirect("/%s/candidate" % election.key().name())
         except Exception as err:
             self.render("candidate.html", election=election, candidates=[], defaults=candidate, error=err)
             raise
@@ -171,7 +168,7 @@ class VotePage(Page):
         # Todo: Update an existing row, if available.
         vote = Vote(election=election, voter=user, ranks=ranked)
         vote.put()
-        self.redirect("/%s/results" % election.slug)
+        self.redirect("/%s/results" % election.key().name())
 
 class ElectionPage(Page):
     def get(self):

@@ -77,7 +77,7 @@ class SlugTestCase(VotingTestCase):
         app = TestApp(application)
         response = app.post("/create", params={"slug": "abcd"})
         fetched = Election.all().fetch(1)[0]
-        self.assertEquals(fetched.slug, "abcd")
+        self.assertEquals(fetched.key().name(), "abcd")
     
     def test_form(self):
         # The creation form should fill in the slug properly.
@@ -88,11 +88,11 @@ class SlugTestCase(VotingTestCase):
         page.form.set("slug", slug)
         response = page.form.submit()
         fetched = Election.all().fetch(1)[0]
-        self.assertEquals(fetched.slug, slug)
+        self.assertEquals(fetched.key().name(), slug)
     
     def test_conflict(self):
         slug = "abcd"
-        Election(slug=slug).put()
+        Election(key_name=slug).put()
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": slug})
@@ -140,7 +140,7 @@ class SlugTestCase(VotingTestCase):
         app = TestApp(application)
         response = app.post("/create", params={"slug": request})
         fetched = Election.all().fetch(1)[0]
-        self.assertEqual(fetched.slug, request.lower())
+        self.assertEqual(fetched.key().name(), request.lower())
     
     def test_punctuation(self):
         # The slug should replace punctuation with hyphens.
@@ -149,7 +149,7 @@ class SlugTestCase(VotingTestCase):
         app = TestApp(application)
         response = app.post("/create", params={"slug": request})
         fetched = Election.all().fetch(1)[0]
-        self.assertEqual(fetched.slug, "one-and-two-three-four-five")
+        self.assertEqual(fetched.key().name(), "one-and-two-three-four-five")
     
     def test_trimmed(self):
         # Spaces and hyphens should be trimmed from the ends of the slug.
@@ -158,7 +158,7 @@ class SlugTestCase(VotingTestCase):
         app = TestApp(application)
         response = app.post("/create", params={"slug": request})
         fetched = Election.all().fetch(1)[0]
-        self.assertEqual(fetched.slug, "inner")
+        self.assertEqual(fetched.key().name(), "inner")
     
     def test_numbers(self):
         # Periods should be allowed, particularly in numbers.
@@ -167,7 +167,7 @@ class SlugTestCase(VotingTestCase):
         app = TestApp(application)
         response = app.post("/create", params={"slug": request})
         fetched = Election.all().fetch(1)[0]
-        self.assertEqual(fetched.slug, request)
+        self.assertEqual(fetched.key().name(), request)
 
 class TitleTestCase(VotingTestCase):
     def test_added(self):
@@ -204,7 +204,7 @@ class TitleTestCase(VotingTestCase):
         app = TestApp(application)
         response = app.post("/create", params={"slug": "abcd"})
         fetched = Election.all().fetch(1)[0]
-        self.assertEquals(fetched.title, fetched.slug)
+        self.assertEquals(fetched.title, fetched.key().name())
     
     def test_blank(self):
         # The title, if blank, should default to the slug.
@@ -212,7 +212,7 @@ class TitleTestCase(VotingTestCase):
         app = TestApp(application)
         response = app.post("/create", params={"slug": "abcd", "title": ""})
         fetched = Election.all().fetch(1)[0]
-        self.assertEquals(fetched.title, fetched.slug)
+        self.assertEquals(fetched.title, fetched.key().name())
 
 class PublicTestCase(VotingTestCase):
     def test_default(self):

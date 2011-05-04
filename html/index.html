@@ -11,7 +11,7 @@
     <h2>Open Contests</h2>
     <dl>
       {% for election in elections %}
-        <dt><a href="/{{ election.slug }}">{{ election.title|escape }}</a></dt>
+        <dt><a href="/{{ election.key.name }}">{{ election.title|escape }}</a></dt>
         <dd>{{ election.description|escape }}</dd>
       {% endfor %}
     </dl>

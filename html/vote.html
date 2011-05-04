@@ -8,7 +8,7 @@
   <body>
     <h1>{{ election.title|escape }}</h1>
     <p>{{ election.description }}</p>
-    <form action="/{{ election.slug }}/vote" method="post">
+    <form action="/{{ election.key_name }}/vote" method="post">
       <div class="choices">
         {% for rank in ranks %}
           <div id="rank{{ forloop.counter }}" class="ranking">
