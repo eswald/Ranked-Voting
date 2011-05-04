@@ -1,12 +1,12 @@
 <html>
   <head>
-    <title>{{ contest.title|escape }}: New Entry</title>
+    <title>{{ election.title|escape }}: New Entry</title>
     <link rel="stylesheet" type="text/css" href="/static/styles.css">
     <link rel="stylesheet" type="text/css" href="/static/wmd/wmd.css">
     <script type="text/javascript" src="/static/wmd/wmd.combined.min.js"></script>
   </head>
   <body>
-    <h1>New entry for {{ contest.title|escape }}</h1>
+    <h1>New entry for {{ election.title|escape }}</h1>
     <div class="choices">
       <div class="ranking">
         {% for option in options %}
@@ -14,7 +14,7 @@
         {% endfor %}
       </div>
     </div>
-    <form action="/{{ contest.slug }}/entry" method="post" class="bubble">
+    <form action="/{{ election.slug }}/entry" method="post" class="bubble">
       <fieldset>
         <legend>Entry information</legend>
         <ol>

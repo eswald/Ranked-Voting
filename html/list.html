@@ -6,9 +6,9 @@
   <body>
     <h1>Contest Voting</h1>
     <dl>
-      {% for contest in contests %}
-        <dt><a href="/contest/{{ contest.slug }}">{{ contest.title|escape }}</a></dt>
-        <dd>{{ contest.description|escape }}<br>{{ contest.starts }} - {{ contest.closes }}</dd>
+      {% for election in elections %}
+        <dt><a href="/election/{{ election.slug }}">{{ election.title|escape }}</a></dt>
+        <dd>{{ election.description|escape }}<br>{{ election.starts }} - {{ election.closes }}</dd>
       {% endfor %}
     </dl>
     <hr>

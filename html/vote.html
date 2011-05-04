@@ -1,14 +1,14 @@
 <html>
   <head>
-    <title>{{ contest.title|escape }}</title>
+    <title>{{ election.title|escape }}</title>
     <link rel="stylesheet" type="text/css" href="/static/styles.css">
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/jquery-ui.min.js"></script>
   </head>
   <body>
-    <h1>{{ contest.title|escape }}</h1>
-    <p>{{ contest.description }}</p>
-    <form action="/{{ contest.slug }}/vote" method="post">
+    <h1>{{ election.title|escape }}</h1>
+    <p>{{ election.description }}</p>
+    <form action="/{{ election.slug }}/vote" method="post">
       <div class="choices">
         {% for rank in ranks %}
           <div id="rank{{ forloop.counter }}" class="ranking">

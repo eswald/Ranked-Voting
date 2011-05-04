@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from webtest import TestApp
 from google.appengine.api.users import User
-from pages import Contest, application
+from pages import Election, application
 from tests import VotingTestCase
 
 class UserTestCase(VotingTestCase):
@@ -9,7 +9,7 @@ class UserTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": "abcd"})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.creator, user)
     
     def test_user_ignored(self):
@@ -19,7 +19,7 @@ class UserTestCase(VotingTestCase):
         other = User(email=email)
         app = TestApp(application)
         response = app.post("/create", params={"slug": "abcd", "user": email})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.creator, user)
 
 class CreationTestCase(VotingTestCase):
@@ -27,7 +27,7 @@ class CreationTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": "abcd"})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertAlmostEqual(fetched.created, datetime.now(), delta=timedelta(seconds=2))
     
     def test_creation_ignored(self):
@@ -36,7 +36,7 @@ class CreationTestCase(VotingTestCase):
         now = datetime.now()
         app = TestApp(application)
         response = app.post("/create", params={"slug": "abcd", "created": now + timedelta(days=2)})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertAlmostEqual(fetched.created, datetime.now(), delta=timedelta(seconds=2))
 
 class StartingTestCase(VotingTestCase):
@@ -44,7 +44,7 @@ class StartingTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": "abcd"})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertAlmostEqual(fetched.starts, datetime.now(), delta=timedelta(seconds=2))
     
     def test_explicit(self):
@@ -52,7 +52,7 @@ class StartingTestCase(VotingTestCase):
         app = TestApp(application)
         when = datetime(*(datetime.now() + timedelta(days=4, seconds=42)).timetuple()[:6])
         response = app.post("/create", params={"slug": "abcd", "starts": str(when)})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEqual(fetched.starts, when)
 
 class ClosingTestCase(VotingTestCase):
@@ -60,7 +60,7 @@ class ClosingTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": "abcd"})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertGreater(fetched.closes, datetime.now() + timedelta(days=7))
     
     def test_explicit(self):
@@ -68,7 +68,7 @@ class ClosingTestCase(VotingTestCase):
         app = TestApp(application)
         when = datetime(*(datetime.now() + timedelta(days=4, seconds=42)).timetuple()[:6])
         response = app.post("/create", params={"slug": "abcd", "closes": str(when)})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEqual(fetched.closes, when)
 
 class SlugTestCase(VotingTestCase):
@@ -76,7 +76,7 @@ class SlugTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": "abcd"})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.slug, "abcd")
     
     def test_form(self):
@@ -87,51 +87,51 @@ class SlugTestCase(VotingTestCase):
         slug = "abcd"
         page.form.set("slug", slug)
         response = page.form.submit()
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.slug, slug)
     
     def test_conflict(self):
         slug = "abcd"
-        Contest(slug=slug).put()
+        Election(slug=slug).put()
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": slug})
-        fetched = Contest.all().fetch(2)
+        fetched = Election.all().fetch(2)
         self.assertEqual(len(fetched), 1)
     
     def test_reserved_create(self):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": "create"})
-        fetched = Contest.all().fetch(2)
+        fetched = Election.all().fetch(2)
         self.assertEqual(len(fetched), 0)
     
     def test_reserved_save(self):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": "save"})
-        fetched = Contest.all().fetch(2)
+        fetched = Election.all().fetch(2)
         self.assertEqual(len(fetched), 0)
     
     def test_reserved_list(self):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": "list"})
-        fetched = Contest.all().fetch(2)
+        fetched = Election.all().fetch(2)
         self.assertEqual(len(fetched), 0)
     
     def test_empty(self):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": ""})
-        fetched = Contest.all().fetch(2)
+        fetched = Election.all().fetch(2)
         self.assertEqual(len(fetched), 0)
     
     def test_omitted(self):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"title": "Yet Another Design Competition"})
-        fetched = Contest.all().fetch(2)
+        fetched = Election.all().fetch(2)
         self.assertEqual(len(fetched), 0)
     
     def test_lowercased(self):
@@ -139,7 +139,7 @@ class SlugTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": request})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEqual(fetched.slug, request.lower())
     
     def test_punctuation(self):
@@ -148,7 +148,7 @@ class SlugTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": request})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEqual(fetched.slug, "one-and-two-three-four-five")
     
     def test_trimmed(self):
@@ -157,7 +157,7 @@ class SlugTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": request})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEqual(fetched.slug, "inner")
     
     def test_numbers(self):
@@ -166,16 +166,16 @@ class SlugTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": request})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEqual(fetched.slug, request)
 
 class TitleTestCase(VotingTestCase):
     def test_added(self):
         user = self.login()
         app = TestApp(application)
-        title = "Contest Title goes Here"
+        title = "Election Title goes Here"
         response = app.post("/create", params={"slug": "abcd", "title": title})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.title, title)
     
     def test_form(self):
@@ -183,19 +183,19 @@ class TitleTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         page = app.get("/create")
-        title = "Contest Title goes Here"
+        title = "Election Title goes Here"
         page.form.set("slug", "abcd")
         page.form.set("title", title)
         response = page.form.submit()
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.title, title)
     
     def test_trimmed(self):
         user = self.login()
         app = TestApp(application)
-        title = " Contest Title goes Here\n"
+        title = " Election Title goes Here\n"
         response = app.post("/create", params={"slug": "abcd", "title": title})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.title, title.strip())
     
     def test_default(self):
@@ -203,7 +203,7 @@ class TitleTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": "abcd"})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.title, fetched.slug)
     
     def test_blank(self):
@@ -211,7 +211,7 @@ class TitleTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": "abcd", "title": ""})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.title, fetched.slug)
 
 class PublicTestCase(VotingTestCase):
@@ -219,7 +219,7 @@ class PublicTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": "abcd"})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEqual(fetched.public, False)
     
     def test_form(self):
@@ -230,14 +230,14 @@ class PublicTestCase(VotingTestCase):
         page.form.set("slug", "abcd")
         page.form.set("public", "1")
         response = page.form.submit()
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.public, True)
     
     def test_checked(self):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": "abcd", "public": "1"})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEqual(fetched.public, True)
     
     def test_explicit(self):
@@ -245,16 +245,16 @@ class PublicTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         response = app.post("/create", params={"slug": "abcd", "public": ""})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEqual(fetched.public, False)
 
 class DescriptionTestCase(VotingTestCase):
     def test_added(self):
         user = self.login()
         app = TestApp(application)
-        description = "Contest Description goes Here"
+        description = "Election Description goes Here"
         response = app.post("/create", params={"slug": "abcd", "description": description})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.description, description)
     
     def test_form(self):
@@ -262,27 +262,27 @@ class DescriptionTestCase(VotingTestCase):
         user = self.login()
         app = TestApp(application)
         page = app.get("/create")
-        description = "Contest Description goes Here"
+        description = "Election Description goes Here"
         page.form.set("slug", "abcd")
         page.form.set("description", description)
         response = page.form.submit()
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.description, description)
     
     def test_multiline(self):
         user = self.login()
         app = TestApp(application)
-        description = "Contest Description goes Here.\nMore lines are explicitly allowed."
+        description = "Election Description goes Here.\nMore lines are explicitly allowed."
         response = app.post("/create", params={"slug": "abcd", "description": description})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.description, description)
     
     def test_trimmed(self):
         user = self.login()
         app = TestApp(application)
-        description = " Contest Description goes Here\n"
+        description = " Election Description goes Here\n"
         response = app.post("/create", params={"slug": "abcd", "description": description})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.description, description.strip())
     
     def test_default(self):
@@ -291,7 +291,7 @@ class DescriptionTestCase(VotingTestCase):
         app = TestApp(application)
         default = "Created by " + user.nickname()
         response = app.post("/create", params={"slug": "abcd"})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.description, default)
     
     def test_blank(self):
@@ -300,6 +300,6 @@ class DescriptionTestCase(VotingTestCase):
         app = TestApp(application)
         default = "Created by " + user.nickname()
         response = app.post("/create", params={"slug": "abcd", "description": ""})
-        fetched = Contest.all().fetch(1)[0]
+        fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.description, default)
 

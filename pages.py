@@ -11,7 +11,7 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-class Contest(db.Model):
+class Election(db.Model):
     creator = db.UserProperty()
     title = db.StringProperty()
     slug = db.StringProperty()
@@ -41,26 +41,26 @@ class Page(webapp.RequestHandler):
         path = join(self.template_directory, template_name)
         self.response.out.write(template.render(path, values))
     
-    def contest(self):
+    def election(self):
         slug = self.request.url.split("/")[3]
-        query = Contest.gql("WHERE slug = :1 LIMIT 1", slug)
+        query = Election.gql("WHERE slug = :1 LIMIT 1", slug)
         try:
-            contest = query[0]
+            election = query[0]
         except IndexError:
             self.response.set_status(404, 'Not Found')
-            contest = None
-        return contest
+            election = None
+        return election
 
 class MainPage(Page):
     def get(self):
         now = datetime.now()
-        current = Contest.gql("WHERE public = True AND closes > :1 ORDER BY closes LIMIT 10", now)
-        self.render("index.html", contests=current)
+        current = Election.gql("WHERE public = True AND closes > :1 ORDER BY closes LIMIT 10", now)
+        self.render("index.html", elections=current)
 
 class ListPage(Page):
     def get(self):
-        current = Contest.gql("ORDER BY created DESC LIMIT 10")
-        self.render("list.html", contests=current)
+        current = Election.gql("ORDER BY created DESC LIMIT 10")
+        self.render("list.html", elections=current)
 
 class CreatePage(Page):
     reserved = [
@@ -79,38 +79,38 @@ class CreatePage(Page):
     
     def post(self):
         try:
-            contest = Contest()
-            contest.creator = users.get_current_user()
+            election = Election()
+            election.creator = users.get_current_user()
             
-            contest.slug = self._slugify(self.request.get("slug"))
-            assert contest.slug not in self.reserved
+            election.slug = self._slugify(self.request.get("slug"))
+            assert election.slug not in self.reserved
             
-            contest.title = self.request.get("title").strip() or contest.slug
-            contest.public = bool(self.request.get("public"))
+            election.title = self.request.get("title").strip() or election.slug
+            election.public = bool(self.request.get("public"))
             
-            default = "Created by " + contest.creator.nickname()
-            contest.description = self.request.get("description").strip() or default
+            default = "Created by " + election.creator.nickname()
+            election.description = self.request.get("description").strip() or default
             
             when = self.request.get("starts")
             if when:
-                contest.starts = date_parser().parse(when)
+                election.starts = date_parser().parse(when)
             else:
-                contest.starts = datetime.now()
+                election.starts = datetime.now()
             
             when = self.request.get("closes")
             if when:
-                contest.closes = date_parser().parse(when)
+                election.closes = date_parser().parse(when)
             else:
-                contest.closes = contest.starts + timedelta(days=14)
+                election.closes = election.starts + timedelta(days=14)
             
             # Check for duplication as the absolute last thing before
             # inserting, for slightly better protection.
             # Consider rolling back if there are two of them after inserting.
-            assert not list(db.GqlQuery("SELECT __key__ FROM Contest WHERE slug = :1 LIMIT 1", contest.slug))
-            contest.put()
+            assert not list(db.GqlQuery("SELECT __key__ FROM Election WHERE slug = :1 LIMIT 1", election.slug))
+            election.put()
             self.redirect("/")
         except Exception as err:
-            self.render("create.html", defaults=contest, error=err)
+            self.render("create.html", defaults=election, error=err)
     
     def _slugify(self, request):
         slug = sub(r"[^a-z.0-9]+", "-", request.lower())
@@ -118,46 +118,46 @@ class CreatePage(Page):
 
 class EntryPage(Page):
     def get(self):
-        contest = self.contest()
-        if not contest:
+        election = self.election()
+        if not election:
             return
         
         try:
-            entries = db.GqlQuery("SELECT * FROM Entry WHERE ANCESTOR IS :1", contest)
+            entries = db.GqlQuery("SELECT * FROM Entry WHERE ANCESTOR IS :1", election)
         except db.KindError:
             entries = []
         
-        self.render("newentry.html", contest=contest, options=entries)
+        self.render("candidate.html", election=election, options=entries)
     
     def post(self):
-        contest = self.contest()
-        if not contest:
+        election = self.election()
+        if not election:
             return
         
         try:
-            entry = Entry(parent=contest)
+            entry = Entry(parent=election)
             
             entry.title = self.request.get("title").strip()
             entry.description = self.request.get("description").strip()
             
             entry.put()
-            self.redirect("/%s/entry" % contest.slug)
+            self.redirect("/%s/entry" % election.slug)
         except Exception as err:
-            self.render("newentry.html", contest=contest, options=[], defaults=entry, error=err)
+            self.render("candidate.html", election=election, options=[], defaults=entry, error=err)
             raise
 
 class VotePage(Page):
     def get(self):
-        contest = self.contest()
-        if not contest:
+        election = self.election()
+        if not election:
             return
         user = users.get_current_user()
-        entries = db.GqlQuery("SELECT * FROM Entry WHERE ANCESTOR IS :1", contest)
+        entries = db.GqlQuery("SELECT * FROM Entry WHERE ANCESTOR IS :1", election)
         ranks = [[], entries, []]
-        self.render("vote.html", contest=contest, ranks=ranks)
+        self.render("vote.html", election=election, ranks=ranks)
     
     def post(self):
-        contest = self.contest()
+        election = self.election()
         user = users.get_current_user()
         
         # Parse the form input into a reasonable vote set.
@@ -168,16 +168,16 @@ class VotePage(Page):
         ranked = ";".join(",".join(sorted(ranks[key])) for key in sorted(ranks))
         
         # Todo: Update an existing row, if available.
-        vote = Vote(parent=contest, voter=user, ranks=ranked)
+        vote = Vote(parent=election, voter=user, ranks=ranked)
         vote.put()
-        self.redirect("/%s/results" % contest.slug)
+        self.redirect("/%s/results" % election.slug)
 
-class ContestPage(Page):
+class ElectionPage(Page):
     def get(self):
-        contest = self.contest()
-        if not contest:
+        election = self.election()
+        if not election:
             return
-        self.render("contest.html", contest=contest)
+        self.render("election.html", election=election)
 
 application = webapp.WSGIApplication([
         ("/", MainPage),
@@ -185,7 +185,7 @@ application = webapp.WSGIApplication([
         ("/list", ListPage),
         ("/[\w.-]+/entry", EntryPage),
         ("/[\w.-]+/vote", VotePage),
-        ("/[\w.-]+", ContestPage),
+        ("/[\w.-]+", ElectionPage),
 ], debug=True)
 
 def main():

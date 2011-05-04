@@ -10,9 +10,9 @@
     <p>This site may be used for casual purposes only.</p>
     <h2>Open Contests</h2>
     <dl>
-      {% for contest in contests %}
-        <dt><a href="/{{ contest.slug }}">{{ contest.title|escape }}</a></dt>
-        <dd>{{ contest.description|escape }}</dd>
+      {% for election in elections %}
+        <dt><a href="/{{ election.slug }}">{{ election.title|escape }}</a></dt>
+        <dd>{{ election.description|escape }}</dd>
       {% endfor %}
     </dl>
     <hr>
