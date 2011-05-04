@@ -26,6 +26,7 @@ class Candidate(db.Model):
     description = db.StringProperty(multiline=True)
 
 class Vote(db.Model):
+    election = db.ReferenceProperty(Contest, required=True)
     voter = db.UserProperty(required=True)
     ranks = db.StringProperty(required=True)
     created = db.DateTimeProperty(auto_now_add=True)
@@ -168,7 +169,7 @@ class VotePage(Page):
         ranked = ";".join(",".join(sorted(ranks[key])) for key in sorted(ranks))
         
         # Todo: Update an existing row, if available.
-        vote = Vote(parent=election, voter=user, ranks=ranked)
+        vote = Vote(election=election, voter=user, ranks=ranked)
         vote.put()
         self.redirect("/%s/results" % election.slug)
 
