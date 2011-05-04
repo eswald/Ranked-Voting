@@ -22,7 +22,6 @@ class Contest(db.Model):
     public = db.BooleanProperty(default=False)
 
 class Entry(db.Model):
-    sequence = db.IntegerProperty()
     title = db.StringProperty()
     description = db.StringProperty(multiline=True)
 
@@ -141,14 +140,6 @@ class EntryPage(Page):
             entry.title = self.request.get("title").strip()
             entry.description = self.request.get("description").strip()
             
-            # Collect the sequence as the absolute last thing before
-            # inserting, for slightly better protection.
-            # Consider rolling back on duplicate sequences.
-            try:
-                others = db.GqlQuery("SELECT __key__ FROM Entry WHERE ANCESTOR IS :1", contest)
-            except db.KindError:
-                others = []
-            entry.sequence = len(list(others)) + 1
             entry.put()
             self.redirect("/%s/entry" % contest.slug)
         except Exception as err:
