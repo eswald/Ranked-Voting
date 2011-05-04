@@ -106,7 +106,7 @@ class CreatePage(Page):
             # Consider rolling back if there are two of them after inserting.
             assert not Election.get_by_key_name(slug)
             election.put()
-            self.redirect("/")
+            self.redirect("/%s/candidate" % slug)
         except Exception as err:
             self.render("create.html", defaults=election, error=err)
     
