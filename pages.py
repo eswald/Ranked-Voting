@@ -160,9 +160,11 @@ class VotePage(Page):
         
         # Parse the form input into a reasonable vote set.
         ranks = defaultdict(set)
-        for candidate in self.request.params:
-            rank = self.request.get(candidate)
-            ranks[rank].add(candidate)
+        for param in self.request.params:
+            candidate = param[1:]
+            if param[0] == "c" and candidate.isdigit():
+                rank = self.request.get(param)
+                ranks[rank].add(candidate)
         ranked = ";".join(",".join(sorted(ranks[key])) for key in sorted(ranks))
         
         # Todo: Update an existing row, if available.
