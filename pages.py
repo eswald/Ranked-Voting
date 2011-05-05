@@ -108,6 +108,7 @@ class CreatePage(Page):
             election.put()
             self.redirect("/%s/candidate" % slug)
         except Exception as err:
+            logging.exception("Failed to create election: %r", repr(locals()))
             self.render("create.html", defaults=election, error=err)
     
     def _slugify(self, request):
@@ -141,6 +142,7 @@ class CandidatePage(Page):
             candidate.put()
             self.redirect("/%s/candidate" % election.key().name())
         except Exception as err:
+            logging.exception("Failed to save candidate: %r", repr(locals()))
             self.render("candidate.html", election=election, candidates=[], defaults=candidate, error=err)
             raise
 
