@@ -2,36 +2,20 @@
   <head>
     <title>{{ election.title|escape }}</title>
     <link rel="stylesheet" type="text/css" href="/static/styles.css">
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/jquery-ui.min.js"></script>
   </head>
   <body>
     <h1>{{ election.title|escape }}</h1>
     <p>{{ election.description }}</p>
     <div class="choices">
-      <div class="ranking">
-      </div>
-      <div class="ranking">
-        <span class="candidate">One</span>
-        <span class="candidate">Two</span>
-      </div>
-      <div class="ranking">
-      </div>
-      <div class="ranking">
-        <span class="candidate">Three</span>
-        <span class="candidate">Four</span>
-      </div>
-      <div class="ranking">
-      </div>
+      {% for rank in ranks %}
+        <div class="ranking">
+          {% for candidate in rank %}
+            <span class="candidate">
+              {{ candidate.title|escape }}
+            </span>
+          {% endfor %}
+        </div>
+      {% endfor %}
     </div>
-    <script type="text/javascript">
-      <!--
-      $(function() {
-        $(".ranking").sortable({
-          connectWith: ".ranking"
-        }).disableSelection();
-      });
-      //-->
-    </script>
   </body>
 </html>

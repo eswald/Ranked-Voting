@@ -11,6 +11,8 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+from voting import rankedpairs, unwind
+
 class Election(db.Model):
     creator = db.UserProperty()
     title = db.StringProperty()
@@ -174,12 +176,18 @@ class VotePage(Page):
         vote.put()
         self.redirect("/%s/results" % election.key().name())
 
-class ElectionPage(Page):
+class ResultPage(Page):
     def get(self):
         election = self.election()
         if not election:
             return
-        self.render("election.html", election=election)
+        candidates = db.GqlQuery("SELECT * FROM Candidate WHERE ANCESTOR IS :1", election)
+        votes = db.GqlQuery("SELECT * FROM Vote WHERE election = :1", election)
+        entries = dict((c.key().id(), c) for c in candidates)
+        ballots = [([map(int, rank.split(",")) for rank in vote.ranks.split(";")], 1) for vote in votes]
+        results = [map(entries.get, rank) for rank in unwind(rankedpairs(ballots, entries), entries)]
+        self.render("election.html", election=election, ranks=results)
+        self.echo("<br>entries = %r<br>ballots = %r<br>results = %r", entries, ballots, results)
 
 application = webapp.WSGIApplication([
         ("/", MainPage),
@@ -187,7 +195,8 @@ application = webapp.WSGIApplication([
         ("/list", ListPage),
         ("/[\w.-]+/candidate", CandidatePage),
         ("/[\w.-]+/vote", VotePage),
-        ("/[\w.-]+", ElectionPage),
+        ("/[\w.-]+/results", ResultPage),
+        ("/[\w.-]+", ResultPage),
 ], debug=True)
 
 def main():

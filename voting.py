@@ -27,7 +27,7 @@ def maybe_tuple(items):
 def unwind(ranks, candidates):
     candidates = set(candidates)
     for row in ranks:
-        if not isinstance(row, (tuple, set)):
+        if not isinstance(row, (tuple, set, list)):
             row = [row]
         rank = set(row) & candidates
         if rank:
