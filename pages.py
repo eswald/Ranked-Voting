@@ -185,9 +185,8 @@ class ResultPage(Page):
         votes = db.GqlQuery("SELECT * FROM Vote WHERE election = :1", election)
         entries = dict((c.key().id(), c) for c in candidates)
         ballots = [([map(int, rank.split(",")) for rank in vote.ranks.split(";")], 1) for vote in votes]
-        results = [map(entries.get, rank) for rank in rankedpairs(ballots, entries)]
+        results = (map(entries.get, rank) for rank in rankedpairs(ballots, entries))
         self.render("election.html", election=election, ranks=results)
-        self.echo("<br>entries = %r<br>ballots = %r<br>results = %r", entries, ballots, results)
 
 application = webapp.WSGIApplication([
         ("/", MainPage),
