@@ -1,5 +1,4 @@
 from tests import VotingTestCase
-from voting import unwind
 from voting import *
 
 def maybe_tuple(items):
