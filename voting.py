@@ -18,12 +18,6 @@ def export(method):
     __all__.append(method.__name__)
     return method
 
-def maybe_tuple(items):
-    result = tuple(sorted(items))
-    if len(result) == 1:
-        result = result[0]
-    return result
-
 def unwind(ranks, candidates):
     candidates = set(candidates)
     for row in ranks:
@@ -244,7 +238,7 @@ def rankedpairs(votes, candidates):
     
     while graph:
         winners = graph.pop()
-        yield maybe_tuple(winners)
+        yield winners
 
 @export
 def instantrunoff(votes, candidates):
@@ -273,11 +267,11 @@ def instantrunoff(votes, candidates):
         if top > majority:
             # We have a winner!
             found = counts[top]
-            winners.append(maybe_tuple(found))
+            winners.append(found)
         else:
             # Eliminate the losers.
             found = counts[min(counts)]
-            losers.insert(0, maybe_tuple(found))
+            losers.insert(0, found)
         
         # Remove ranked candidates from the list
         candidates.difference_update(found)
@@ -296,7 +290,7 @@ def plurality(votes, candidates):
                 totals[candidate] += value
             break
     
-    return [maybe_tuple(rank) for rank in regrouped(totals)]
+    return [rank for rank in regrouped(totals)]
 
 @export
 def borda(votes, candidates):
@@ -320,7 +314,7 @@ def borda(votes, candidates):
             for candidate in row:
                 ratings[candidate] += value
     
-    return [maybe_tuple(rank) for rank in regrouped(ratings)]
+    return [rank for rank in regrouped(ratings)]
 
 @export
 def bucklin(votes, candidates):
@@ -355,12 +349,12 @@ def bucklin(votes, candidates):
         result = sorted(counts, reverse=True)
         if result[0] > majority:
             # We have a winner!
-            return [maybe_tuple(counts[total]) for total in result]
+            return [counts[total] for total in result]
     else:
         # No majority exists.
         # This might not be the best result,
         # but I'm not sure how to better express the lack of majority.
-        return [maybe_tuple(candidates)]
+        return [candidates]
 
 @export
 def minimax(votes, candidates):
@@ -376,7 +370,7 @@ def minimax(votes, candidates):
     while graph:
         winners = graph.pop()
         if winners:
-            yield maybe_tuple(winners)
+            yield winners
         else:
             for sink, source in next(groups):
                 if (sink, source) in graph.edges():
@@ -418,7 +412,7 @@ def beatpath(votes, candidates):
     
     while final:
         winners = final.pop()
-        yield maybe_tuple(winners)
+        yield winners
 
 @export
 def river(votes, candidates):
@@ -438,7 +432,7 @@ def river(votes, candidates):
     
     while graph:
         winners = graph.pop()
-        yield maybe_tuple(winners)
+        yield winners
 
 @export
 def kemeny(votes, candidates):
@@ -471,7 +465,7 @@ def kemeny(votes, candidates):
     
     if len(finalists) == 1:
         # Shortcut for an unambiguous result
-        result = list(finalists[0])
+        result = [[item] for item in finalists[0]]
     else:
         # Collapse the ties.
         ties = 0
@@ -482,7 +476,7 @@ def kemeny(votes, candidates):
             ties += 1
             tied.update(winners)
             if len(tied) == ties:
-                result.append(maybe_tuple(tied))
+                result.append(tied)
                 ties = 0
                 tied = set()
     

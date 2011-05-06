@@ -2,6 +2,12 @@ from tests import VotingTestCase
 from voting import unwind
 from voting import *
 
+def maybe_tuple(items):
+    result = tuple(sorted(items))
+    if len(result) == 1:
+        result = result[0]
+    return result
+
 class MethodTestCase(VotingTestCase):
     r'''Base class for testing the voting methods.
         Each TestCase class presents a single election.
@@ -37,7 +43,7 @@ class MethodTestCase(VotingTestCase):
     }
     
     def check_method(self, method):
-        result = list(method(self.ballots, self.candidates))
+        result = map(maybe_tuple, method(self.ballots, self.candidates))
         self.assertEqual(self.results[method], result)
     
     def test_rankedpairs(self):
@@ -257,7 +263,7 @@ class MonotonicityTestCase(CriterionTestCase):
     
     def check_results(self, results):
         def position(result, candidate):
-            for n, rank in enumerate(unwind(result, self.candidates)):
+            for n, rank in enumerate(result):
                 if candidate in rank:
                     return n
         
