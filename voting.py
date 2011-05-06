@@ -49,10 +49,14 @@ except NameError:
         return iterable.next()
 
 __all__ = []
+methods = {}
 
-def export(method):
-    __all__.append(method.__name__)
-    return method
+def method(name):
+    def export(method):
+        methods[name] = method
+        __all__.append(method.__name__)
+        return method
+    return export
 
 def unwind(ranks, candidates):
     candidates = set(candidates)
@@ -262,7 +266,7 @@ def pairs(sequence):
         for a in xrange(0, b):
             yield items[a], items[b]
 
-@export
+@method("Ranked Pairs")
 def rankedpairs(votes, candidates):
     # Tideman method, using a graph of preferences data.
     # Modified by ignoring unstated candidates, instead of
@@ -276,7 +280,7 @@ def rankedpairs(votes, candidates):
         winners = graph.pop()
         yield winners
 
-@export
+@method("Instant-Runoff")
 def instantrunoff(votes, candidates):
     # Instant Runoff Voting (IRV)
     # Modified to return a total ordering.
@@ -314,7 +318,7 @@ def instantrunoff(votes, candidates):
     
     return winners + losers
 
-@export
+@method("Plurality")
 def plurality(votes, candidates):
     # First past the post, winner takes all.
     # Only the top preference is even looked at.
@@ -328,7 +332,7 @@ def plurality(votes, candidates):
     
     return [rank for rank in regrouped(totals)]
 
-@export
+@method("Borda Count")
 def borda(votes, candidates):
     # Borda Count method.
     # The over/under count system makes each ballot zero-sum, which allows
@@ -352,7 +356,7 @@ def borda(votes, candidates):
     
     return [rank for rank in regrouped(ratings)]
 
-@export
+@method("Bucklin")
 def bucklin(votes, candidates):
     # The Bucklin or Grand Junction voting system.
     # Seems to work well for three candidates, but not more.
@@ -392,7 +396,7 @@ def bucklin(votes, candidates):
         # but I'm not sure how to better express the lack of majority.
         return [candidates]
 
-@export
+@method("Minimax")
 def minimax(votes, candidates):
     # Minimax / Successive reversal / Simpson method.
     # Using rankings, select unbeaten candidates.
@@ -412,7 +416,7 @@ def minimax(votes, candidates):
                 if (sink, source) in graph.edges():
                     graph.remove_edge(sink, source)
 
-@export
+@method("Beatpath")
 def beatpath(votes, candidates):
     # Schulze method, equivalent to Cloneproof Schwartz Sequential Dropping.
     majorities = pairwise(votes, candidates)
@@ -450,7 +454,7 @@ def beatpath(votes, candidates):
         winners = final.pop()
         yield winners
 
-@export
+@method("River")
 def river(votes, candidates):
     # A compromize between Beatpath and Ranked Pairs
     # http://web.archive.org/web/20071031155527/http://lists.electorama.com/pipermail/election-methods-electorama.com/2004-October/013971.html
@@ -470,7 +474,7 @@ def river(votes, candidates):
         winners = graph.pop()
         yield winners
 
-@export
+@method("Kemeny-Young")
 def kemeny(votes, candidates):
     # Kemeny-Young maximum likelihood method.
     # http://en.wikipedia.org/wiki/Kemeny-Young_method

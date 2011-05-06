@@ -4,6 +4,7 @@ from os.path import dirname, join
 from collections import defaultdict
 from datetime import datetime, timedelta
 from dateutil.parser import parser as date_parser
+from random import choice
 
 from google.appengine.api import users
 from google.appengine.ext import db
@@ -11,7 +12,7 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from voting import rankedpairs
+from voting import methods
 
 class Election(db.Model):
     creator = db.UserProperty()
@@ -181,12 +182,21 @@ class ResultPage(Page):
         election = self.election()
         if not election:
             return
+        
+        pieces = self.request.url.split("/")
+        base = str.join("/", pieces[:4])
+        voting = dict((method.__name__, method) for method in methods.itervalues())
+        try:
+            method = pieces[5]
+        except IndexError:
+            method = choice(list(voting))
+        
         candidates = db.GqlQuery("SELECT * FROM Candidate WHERE ANCESTOR IS :1", election)
         votes = db.GqlQuery("SELECT * FROM Vote WHERE election = :1", election)
         entries = dict((c.key().id(), c) for c in candidates)
         ballots = [([map(int, rank.split(",")) for rank in vote.ranks.split(";")], 1) for vote in votes]
-        results = (map(entries.get, rank) for rank in rankedpairs(ballots, entries))
-        self.render("election.html", election=election, ranks=results)
+        results = (map(entries.get, rank) for rank in voting[method](ballots, entries))
+        self.render("election.html", election=election, ranks=results, methods=methods, method=method, base=base)
 
 application = webapp.WSGIApplication([
         ("/", MainPage),
@@ -195,6 +205,7 @@ application = webapp.WSGIApplication([
         ("/[\w.-]+/candidate", CandidatePage),
         ("/[\w.-]+/vote", VotePage),
         ("/[\w.-]+/results", ResultPage),
+        ("/[\w.-]+/results/\w*", ResultPage),
         ("/[\w.-]+", ResultPage),
 ], debug=True)
 
