@@ -4,8 +4,8 @@ html, body, h1, form, fieldset, legend, ol, li {
 }
 
 body {
-	background: #FFF;
-	color: #111;
+	background: #EED;
+	color: #112;
 	padding: 20px;
 }
 
@@ -20,11 +20,11 @@ body {
 .ranking {
 	padding: .3em;
 	margin: 0;
-	border-top: .2em solid #CCC;
+	border-top: .2em solid #BBC;
 }
 
 .choices {
-	border-bottom: .2em solid #CCC;
+	border-bottom: .2em solid #BBC;
 	margin-bottom: 1em;
 }
 
