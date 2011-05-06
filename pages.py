@@ -109,7 +109,7 @@ class CreatePage(Page):
             assert not Election.get_by_key_name(slug)
             election.put()
             self.redirect("/%s/candidate" % slug)
-        except Exception as err:
+        except Exception, err:
             logging.exception("Failed to create election: %r", repr(locals()))
             self.render("create.html", defaults=election, error=err)
     
@@ -143,7 +143,7 @@ class CandidatePage(Page):
             
             candidate.put()
             self.redirect("/%s/candidate" % election.key().name())
-        except Exception as err:
+        except Exception, err:
             logging.exception("Failed to save candidate: %r", repr(locals()))
             self.render("candidate.html", election=election, candidates=[], defaults=candidate, error=err)
             raise
