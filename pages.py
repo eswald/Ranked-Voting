@@ -7,6 +7,12 @@ from dateutil.parser import parser as date_parser
 from random import choice
 
 from google.appengine.api import users
+from google.appengine.dist import use_library
+
+# We need some 1.* features of the template system,
+# particularly tuple unpacking in for loops.
+use_library("django", "1.2")
+
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -184,7 +190,6 @@ class ResultPage(Page):
             return
         
         pieces = self.request.url.split("/")
-        base = str.join("/", pieces[:4])
         voting = dict((method.__name__, method) for method in methods.itervalues())
         try:
             method = pieces[5]
@@ -196,7 +201,8 @@ class ResultPage(Page):
         entries = dict((c.key().id(), c) for c in candidates)
         ballots = [([map(int, rank.split(",")) for rank in vote.ranks.split(";")], 1) for vote in votes]
         results = (map(entries.get, rank) for rank in voting[method](ballots, entries))
-        self.render("election.html", election=election, ranks=results, methods=methods, method=method, base=base)
+        methodnames = [(methods[key].__name__, key) for key in methods]
+        self.render("election.html", election=election, ranks=results, methods=methodnames, method=method)
 
 application = webapp.WSGIApplication([
         ("/", MainPage),

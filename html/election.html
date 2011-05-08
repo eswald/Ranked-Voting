@@ -6,7 +6,13 @@
   <body>
     <h1>{{ election.title|escape }}</h1>
     <p>{{ election.description }}</p>
-    {{ base }}/results/{{ method }}
+    <select onchange="location = this.options[this.selectedIndex].value">
+      {% for methodkey, methodname in methods %}
+        <option value="/{{ election.key.name }}/results/{{ methodkey }}"{% ifequal methodkey method %} selected="selected"{% endifequal %}>
+          {{ methodname }}
+        </option>
+      {% endfor %}
+    </select>
     <div class="choices">
       {% for rank in ranks %}
         <div class="ranking">
