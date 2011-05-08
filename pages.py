@@ -162,8 +162,14 @@ class VotePage(Page):
             return
         user = users.get_current_user()
         candidates = db.GqlQuery("SELECT * FROM Candidate WHERE ANCESTOR IS :1", election)
-        ranks = [[], candidates, []]
-        self.render("vote.html", election=election, ranks=ranks)
+        vote = list(db.GqlQuery("SELECT * FROM Vote WHERE election = :1 AND voter = :2 LIMIT 1", election, user))
+        if vote:
+            vote = vote[0]
+            entries = dict((c.key().id(), c) for c in candidates)
+            ranks = [[entries[int(key)] for key in rank.split(",")] for rank in vote.ranks.split(";")]
+        else:
+            ranks = [[], candidates, []]
+        self.render("vote.html", election=election, ranks=ranks, vote=vote)
     
     def post(self):
         election = self.election()

@@ -9,6 +9,9 @@
     <h1>{{ election.title|escape }}</h1>
     <p>{{ election.description }}</p>
     <form action="/{{ election.key.name }}/vote" method="post">
+      {% if vote %}
+        <input type="hidden" name="vote" value="{{ vote.key.id }}">
+      {% endif %}
       <div class="choices">
         {% for rank in ranks %}
           <div id="rank{{ forloop.counter }}" class="ranking">
