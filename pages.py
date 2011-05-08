@@ -2,6 +2,7 @@ import logging
 from re import sub
 from os.path import dirname, join
 from collections import defaultdict
+from itertools import repeat
 from datetime import datetime, timedelta
 from dateutil.parser import parser as date_parser
 from random import choice
@@ -165,7 +166,7 @@ class VotePage(Page):
         vote = Vote.get_by_key_name(self._vote_key(election, user))
         if vote:
             entries = dict((c.key().id(), c) for c in candidates)
-            ranks = [[entries[int(key)] for key in rank.split(",")] for rank in vote.ranks.split(";")]
+            ranks = self._interleave(repeat([]), ([entries[int(key)] for key in rank.split(",")] for rank in vote.ranks.split(";")))
         else:
             ranks = [[], candidates, []]
         self.render("vote.html", election=election, ranks=ranks)
@@ -196,6 +197,13 @@ class VotePage(Page):
     
     def _vote_key(self, election, user):
         return "%s/%s" % (election.key().name(), user.user_id())
+    
+    @staticmethod
+    def _interleave(*sequences):
+        sequences = map(iter, sequences)
+        while sequences:
+            for seq in sequences:
+                yield seq.next()
 
 class ResultPage(Page):
     def get(self):
