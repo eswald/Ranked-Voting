@@ -162,14 +162,13 @@ class VotePage(Page):
             return
         user = users.get_current_user()
         candidates = db.GqlQuery("SELECT * FROM Candidate WHERE ANCESTOR IS :1", election)
-        vote = list(db.GqlQuery("SELECT * FROM Vote WHERE election = :1 AND voter = :2 LIMIT 1", election, user))
+        vote = Vote.get_by_key_name(self._vote_key(election, user))
         if vote:
-            vote = vote[0]
             entries = dict((c.key().id(), c) for c in candidates)
             ranks = [[entries[int(key)] for key in rank.split(",")] for rank in vote.ranks.split(";")]
         else:
             ranks = [[], candidates, []]
-        self.render("vote.html", election=election, ranks=ranks, vote=vote)
+        self.render("vote.html", election=election, ranks=ranks)
     
     def post(self):
         election = self.election()
@@ -184,10 +183,19 @@ class VotePage(Page):
                 ranks[rank].add(candidate)
         ranked = ";".join(",".join(sorted(ranks[key])) for key in sorted(ranks))
         
-        # Todo: Update an existing row, if available.
-        vote = Vote(election=election, voter=user, ranks=ranked)
-        vote.put()
+        # Todo: Use a single transaction for this whole thing,
+        # folding the get_or_insert part into the transaction.
+        vote = Vote.get_or_insert(self._vote_key(election, user),
+            election=election, voter=user, ranks=ranked)
+        if vote.ranks != ranked:
+            vote.ranks = ranked
+            vote.modified = datetime.now()
+            vote.put()
+        
         self.redirect("/%s/results" % election.key().name())
+    
+    def _vote_key(self, election, user):
+        return "%s/%s" % (election.key().name(), user.user_id())
 
 class ResultPage(Page):
     def get(self):
