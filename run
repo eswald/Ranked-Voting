@@ -2,4 +2,11 @@
 cd "$(dirname $0)"
 dir="$(basename "$(pwd)")"
 cd ..
-exec ./google_appengine/dev_appserver.py "$dir/" "$@"
+data="$PWD/data"
+mkdir -p "$data/$dir.files"
+exec ./google_appengine/dev_appserver.py \
+  --rdbms_sqlite_path="$data/$dir.rdbms" \
+  --datastore_path="$data/$dir.datastore" \
+  --blobstore_path="$data/$dir.files" \
+  --history_path="$data/$dir.history" \
+  "$@" "$dir/"
