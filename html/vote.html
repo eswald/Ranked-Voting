@@ -4,6 +4,7 @@
     <link rel="stylesheet" type="text/css" href="/static/styles.css">
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="/static/voting.js"></script>
   </head>
   <body>
     <h1>{{ election.title|escape }}</h1>
@@ -12,26 +13,21 @@
       <div class="choices">
         {% for rank in ranks %}
           <div id="rank{{ forloop.counter }}" class="ranking">
+            <input type="number" class="rankvalue" value="{{ forloop.counter }}">
             {% for candidate in rank %}
               <span class="candidate">
                 {{ candidate.title|escape }}
-                <input type="hidden" name="c{{ candidate.key.id }}" value="{{ forloop.parentloop.counter }}">
+                <input type="number" name="c{{ candidate.key.id }}"
+                  class="candidatevalue" value="{{ forloop.parentloop.counter }}">
               </span>
             {% endfor %}
           </div>
-          <script type="text/javascript">
-            <!--
-            $(function() {
-              $("#rank{{ forloop.counter }}").sortable({
-                connectWith: ".ranking",
-                receive: function(event, ui) {
-                  ui.item.find('input').val({{ forloop.counter }});
-                }
-              }).disableSelection();
-            });
-            //-->
-          </script>
         {% endfor %}
+        <script type="text/javascript">
+          <!--
+          $(enable_voting);
+          //-->
+        </script>
       </div>
       <input type="submit" value="Submit" class="button">
     </form>

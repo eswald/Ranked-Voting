@@ -95,3 +95,9 @@ footer {
 	border-top: 2px groove;
 	margin-top: 1em;
 }
+
+input.candidatevalue,
+input.rankvalue {
+	width: 4em;
+	display: none;
+}
