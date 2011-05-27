@@ -8,19 +8,13 @@ var enable_voting = function() {
 			var refilled = false;
 			
 			var next = target.next();
-			if (!next.is(".ranking")) {
-				target.after(new_rank);
-				refilled = true;
-			} else if (next.has(".candidate").length) {
+			if (!next.is(".ranking") || next.has(".candidate").length) {
 				target.after(new_rank);
 				refilled = true;
 			}
 			
 			var prev = target.prev();
-			if (!prev.is(".ranking")) {
-				target.before(new_rank);
-				refilled = true;
-			} else if (prev.has(".candidate").length) {
+			if (!prev.is(".ranking") || prev.has(".candidate").length) {
 				target.before(new_rank);
 				refilled = true;
 			}
