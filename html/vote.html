@@ -12,7 +12,7 @@
     <form action="/{{ election.key.name }}/vote" method="post">
       <div class="choices">
         {% for rank in ranks %}
-          <div id="rank{{ forloop.counter }}" class="ranking">
+          <div class="ranking">
             <input type="number" class="rankvalue" value="{{ forloop.counter }}">
             {% for candidate in rank %}
               <span class="candidate">
