@@ -7,6 +7,7 @@ var enable_voting = function() {
 			var target = $(event.target);
 			var refilled = false;
 			
+			// Insert empty ranks where appropriate.
 			var next = target.next();
 			if (!next.is(".ranking") || next.has(".candidate").length) {
 				target.after(new_rank);
@@ -19,6 +20,20 @@ var enable_voting = function() {
 				refilled = true;
 			}
 			
+			// Remove empty ranks where appropriate.
+			if (!ui.sender.has(".candidate").length) {
+				next = ui.sender.next()
+				if (next.is(".ranking") && !next.has(".candidate").length) {
+					next.remove();
+				}
+				
+				prev = ui.sender.prev()
+				if (prev.is(".ranking") && !prev.has(".candidate").length) {
+					prev.remove();
+				}
+			}
+			
+			// Update candidate values.
 			if (refilled) {
 				enable_voting();
 				$(".ranking").each(function(index, element) {
