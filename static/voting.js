@@ -5,13 +5,29 @@ var enable_voting = function() {
 		connectWith: ".ranking",
 		receive: function(event, ui) {
 			var target = $(event.target);
+			var refilled = false;
 			var newval = target.find('.rankvalue').val();
 			ui.item.find('input').val(newval);
-			if (!target.next().is(".ranking")) {
+			
+			var next = target.next();
+			if (!next.is(".ranking")) {
 				target.after(new_rank.replace("{val}", Number(newval) + 1));
-				enable_voting();
-			} else if (target.next().has(".candidate").length) {
+				refilled = true;
+			} else if (next.has(".candidate").length) {
 				target.after(new_rank.replace("{val}", Number(newval) + 1));
+				refilled = true;
+			}
+			
+			var prev = target.prev();
+			if (!prev.is(".ranking")) {
+				target.before(new_rank.replace("{val}", Number(newval) - 1));
+				refilled = true;
+			} else if (prev.has(".candidate").length) {
+				target.before(new_rank.replace("{val}", Number(newval) - 1));
+				refilled = true;
+			}
+			
+			if (refilled) {
 				enable_voting();
 			}
 		}
