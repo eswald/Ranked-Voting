@@ -13,7 +13,6 @@
       <div class="choices">
         {% for rank in ranks %}
           <div class="ranking">
-            <input type="number" class="rankvalue" value="{{ forloop.counter }}">
             {% for candidate in rank %}
               <span class="candidate">
                 {{ candidate.title|escape }}

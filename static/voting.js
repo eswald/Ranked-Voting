@@ -1,5 +1,5 @@
 var enable_voting = function() {
-	var new_rank = '<div class="ranking"><input type="number" class="rankvalue" value="0"></div>';
+	var new_rank = '<div class="ranking"></div>';
 	
 	$(".ranking").sortable({
 		connectWith: ".ranking",
@@ -36,14 +36,12 @@ var enable_voting = function() {
 			// Update candidate values.
 			if (refilled) {
 				enable_voting();
-				$(".ranking").each(function(index, element) {
-					$(element).find(".rankvalue").val(index + 1);
-					$(element).find(".candidatevalue").val(index + 1);
-				})
 			} else {
-				var newval = target.find('.rankvalue').val();
+				var newval = target.data("rankvalue");
 				ui.item.find('input').val(newval);
 			}
 		}
+	}).each(function (index, element) {
+		$(element).data("rankvalue", index + 1).find(".candidatevalue").val(index + 1);
 	}).disableSelection();
 };
