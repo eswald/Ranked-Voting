@@ -1,27 +1,29 @@
 var enable_voting = function() {
 	var new_rank = '<div class="ranking"></div>';
 	
-	$(".ranking").sortable({
-		connectWith: ".ranking",
+	$(".ranking, .unranked").sortable({
+		connectWith: ".ranking, .unranked",
 		receive: function(event, ui) {
 			var target = $(event.target);
 			var refilled = false;
 			
 			// Insert empty ranks where appropriate.
-			var next = target.next();
-			if (!next.is(".ranking") || next.has(".candidate").length) {
-				target.after(new_rank);
-				refilled = true;
-			}
-			
-			var prev = target.prev();
-			if (!prev.is(".ranking") || prev.has(".candidate").length) {
-				target.before(new_rank);
-				refilled = true;
+			if (target.is(".ranking")) {
+				var next = target.next();
+				if (!next.is(".ranking") || next.has(".candidate").length) {
+					target.after(new_rank);
+					refilled = true;
+				}
+				
+				var prev = target.prev();
+				if (!prev.is(".ranking") || prev.has(".candidate").length) {
+					target.before(new_rank);
+					refilled = true;
+				}
 			}
 			
 			// Remove empty ranks where appropriate.
-			if (!ui.sender.has(".candidate").length) {
+			if (ui.sender.is(".ranking") && !ui.sender.has(".candidate").length) {
 				next = ui.sender.next()
 				if (next.is(".ranking") && !next.has(".candidate").length) {
 					next.remove();
@@ -41,7 +43,10 @@ var enable_voting = function() {
 				ui.item.find('input').val(newval);
 			}
 		}
-	}).each(function (index, element) {
-		$(element).data("rankvalue", index + 1).find(".candidatevalue").val(index + 1);
 	}).disableSelection();
+	
+	$(".unranked").data("rankvalue", 0);
+	$(".ranking").each(function (index, element) {
+		$(element).data("rankvalue", index + 1).find(".candidatevalue").val(index + 1);
+	});
 };

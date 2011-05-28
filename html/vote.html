@@ -22,12 +22,21 @@
             {% endfor %}
           </div>
         {% endfor %}
-        <script type="text/javascript">
-          <!--
-          $(enable_voting);
-          //-->
-        </script>
       </div>
+      <div class="unranked">
+        {% for candidate in unranked %}
+          <span class="candidate">
+            {{ candidate.title|escape }}
+            <input type="number" name="c{{ candidate.key.id }}"
+              class="candidatevalue" value="0">
+          </span>
+        {% endfor %}
+      </div>
+      <script type="text/javascript">
+        <!--
+        $(enable_voting);
+        //-->
+      </script>
       <input type="submit" value="Submit" class="button">
     </form>
   </body>

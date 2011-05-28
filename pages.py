@@ -166,10 +166,13 @@ class VotePage(Page):
         vote = Vote.get_by_key_name(self._vote_key(election, user))
         if vote:
             entries = dict((c.key().id(), c) for c in candidates)
-            ranks = self._interleave(repeat([]), ([entries[int(key)] for key in rank.split(",")] for rank in vote.ranks.split(";")))
+            keys = [[int(key) for key in rank.split(",")] for rank in vote.ranks.split(";")]
+            ranks = self._interleave(repeat([]), ([entries[key] for key in rank] for rank in keys))
+            unranked = [entries[key] for key in entries if key not in set(sum(keys, []))]
         else:
-            ranks = [[], candidates, []]
-        self.render("vote.html", election=election, ranks=ranks)
+            ranks = [[]]
+            unranked = candidates
+        self.render("vote.html", election=election, ranks=ranks, unranked=unranked)
     
     def post(self):
         election = self.election()
