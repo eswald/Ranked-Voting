@@ -183,8 +183,9 @@ class VotePage(Page):
         for param in self.request.params:
             candidate = param[1:]
             if param[0] == "c" and candidate.isdigit():
-                rank = self.request.get(param)
-                ranks[rank].add(candidate)
+                rank = int(self.request.get(param))
+                if rank:
+                    ranks[rank].add(candidate)
         ranked = ";".join(",".join(sorted(ranks[key])) for key in sorted(ranks))
         
         # Todo: Use a single transaction for this whole thing,

@@ -17,7 +17,7 @@
               <span class="candidate">
                 {{ candidate.title|escape }}
                 <input type="number" name="c{{ candidate.key.id }}"
-                  class="candidatevalue" value="{{ forloop.parentloop.counter }}">
+                  class="candidatevalue" value="{{ forloop.parentloop.counter }}" min="0">
               </span>
             {% endfor %}
           </div>
@@ -28,7 +28,7 @@
           <span class="candidate">
             {{ candidate.title|escape }}
             <input type="number" name="c{{ candidate.key.id }}"
-              class="candidatevalue" value="0">
+              class="candidatevalue" value="0" min="0">
           </span>
         {% endfor %}
       </div>
