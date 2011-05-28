@@ -20,12 +20,18 @@ body {
 .ranking {
 	padding: .3em;
 	margin: 0;
-	border-top: .2em solid #BBC;
+	border: 0;
+	text-align: center;
 }
 
 .choices {
-	border-bottom: .2em solid #BBC;
+	width: 60%;
+	background: #09C;
+	border: .2em solid #BBC;
 	margin-bottom: 1em;
+	-moz-border-radius: 1em;
+	-webkit-border-radius: 1em;
+	border-radius: 1em;
 }
 
 form.bubble {
@@ -96,8 +102,7 @@ footer {
 	margin-top: 1em;
 }
 
-input.candidatevalue,
-input.rankvalue {
+input.candidatevalue {
 	width: 4em;
 	display: none;
 }
