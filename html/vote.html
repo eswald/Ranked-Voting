@@ -10,6 +10,15 @@
     <h1>{{ election.title|escape }}</h1>
     <p>{{ election.description }}</p>
     <form action="/{{ election.key.name }}/vote" method="post">
+      <div class="unranked">
+        {% for candidate in unranked %}
+          <span class="candidate">
+            {{ candidate.title|escape }}
+            <input type="number" name="c{{ candidate.key.id }}"
+              class="candidatevalue" value="0" min="0">
+          </span>
+        {% endfor %}
+      </div>
       <div class="choices">
         {% for rank in ranks %}
           <div class="ranking">
@@ -21,15 +30,6 @@
               </span>
             {% endfor %}
           </div>
-        {% endfor %}
-      </div>
-      <div class="unranked">
-        {% for candidate in unranked %}
-          <span class="candidate">
-            {{ candidate.title|escape }}
-            <input type="number" name="c{{ candidate.key.id }}"
-              class="candidatevalue" value="0" min="0">
-          </span>
         {% endfor %}
       </div>
       <script type="text/javascript">

@@ -17,6 +17,23 @@ body {
 	margin: .1em;
 }
 
+.unranked {
+	padding: .5em;
+	margin: 1em;
+	border-radius: 1em;
+	border: 2px solid #C9C;
+	background: #636;
+	text-align: center;
+	float: right;
+	width: 12em;
+}
+
+.unranked .candidate {
+	display: block;
+	margin: .6em;
+	width: auto;
+}
+
 .ranking {
 	padding: .3em;
 	margin: 0;
@@ -25,10 +42,10 @@ body {
 }
 
 .choices {
-	width: 60%;
+	width: 44em;
 	background: #09C;
 	border: .2em solid #BBC;
-	margin-bottom: 1em;
+	margin: 1em 0;
 	-moz-border-radius: 1em;
 	-webkit-border-radius: 1em;
 	border-radius: 1em;
@@ -69,7 +86,7 @@ li.formtext label {
 
 .button {
 	background: #363;
-	border: outset;
+	border: outset #462;
 	-moz-border-radius: 20px;
 	-webkit-border-radius: 20px;
 	-khtml-border-radius: 20px;
@@ -89,7 +106,8 @@ li.formtext label {
 }
 
 .button:active {
-	border: inset;
+	border: inset #264;
+	background: #252;
 }
 
 #description {
