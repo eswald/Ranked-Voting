@@ -34,11 +34,16 @@ body {
 	width: auto;
 }
 
+.unranked:before {
+	color: #FEE;
+	font-weight: bold;
+	content: "Unranked";
+}
+
 .ranking {
 	padding: .3em;
 	margin: 0;
 	border: 0;
-	text-align: center;
 }
 
 .choices {
@@ -46,9 +51,23 @@ body {
 	background: #09C;
 	border: .2em solid #BBC;
 	margin: 1em 0;
+	padding: .2em;
 	-moz-border-radius: 1em;
 	-webkit-border-radius: 1em;
 	border-radius: 1em;
+	text-align: center;
+}
+
+.choices:before {
+	color: #FEE;
+	font-weight: bold;
+	content: "Favorite";
+}
+
+.choices:after {
+	color: #FEE;
+	font-weight: bold;
+	content: "Least Favorite";
 }
 
 form.bubble {
