@@ -5,7 +5,7 @@
   </head>
   <body>
     <h1>{{ election.title|escape }}</h1>
-    <p>{{ election.description }}</p>
+    <p>{{ election.description|markdown }}</p>
     <select onchange="location = this.options[this.selectedIndex].value">
       {% for methodkey, methodname in methods %}
         <option value="/{{ election.key.name }}/results/{{ methodkey }}"{% ifequal methodkey method %} selected="selected"{% endifequal %}>

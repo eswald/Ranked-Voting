@@ -8,7 +8,7 @@
     <dl>
       {% for election in elections %}
         <dt><a href="/election/{{ election.key.name }}">{{ election.title|escape }}</a></dt>
-        <dd>{{ election.description|escape }}<br>{{ election.starts }} - {{ election.closes }}</dd>
+        <dd>{{ election.description|markdown }}<br>{{ election.starts }} - {{ election.closes }}</dd>
       {% endfor %}
     </dl>
     <hr>

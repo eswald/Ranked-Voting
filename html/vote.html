@@ -8,7 +8,7 @@
   </head>
   <body>
     <h1>{{ election.title|escape }}</h1>
-    <p>{{ election.description }}</p>
+    <p>{{ election.description|markdown }}</p>
     <form action="/{{ election.key.name }}/vote" method="post">
       <div class="unranked">
         {% for candidate in unranked %}

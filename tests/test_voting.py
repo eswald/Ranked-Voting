@@ -1,5 +1,5 @@
 from tests import VotingTestCase
-from voting import *
+from voting.methods import *
 
 def maybe_tuple(items):
     result = tuple(sorted(items))

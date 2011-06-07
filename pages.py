@@ -19,7 +19,7 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from voting import methods
+from voting.methods import methods
 
 class Election(db.Model):
     creator = db.UserProperty()
@@ -243,6 +243,7 @@ application = webapp.WSGIApplication([
 ], debug=True)
 
 def main():
+    webapp.template.register_template_library("voting.filters")
     run_wsgi_app(application)
 
 if __name__ == "__main__":
