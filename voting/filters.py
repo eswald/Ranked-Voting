@@ -6,5 +6,5 @@ register = webapp.template.create_template_register()
 
 @register.filter
 def markdown(value):
-    result = markdown2.markdown(value)
+    result = markdown2.markdown(value, safe_mode="escape")
     return mark_safe(result)
