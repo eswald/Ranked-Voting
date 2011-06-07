@@ -4,11 +4,11 @@ from tests import VotingTestCase
 from webtest import TestApp
 
 class RootTestCase(VotingTestCase):
-    def check_shown(self, shown, public=True, closes=+1):
+    def check_shown(self, shown, public=True, approved=True, closes=+1):
         slug = "abcd"
         title = "Yet another design contest"
         closing = datetime.now() + timedelta(days=closes)
-        Election(key_name=slug, title=title, public=public, closes=closing).put()
+        Election(key_name=slug, title=title, public=public, approved=approved, closes=closing).put()
         app = TestApp(application)
         response = app.get("/")
         print response
@@ -26,23 +26,27 @@ class RootTestCase(VotingTestCase):
         self.assertIn("/create", response)
     
     def test_public_listed(self):
-        # Public, currently-open elections should be listed on the front page.
-        self.check_shown(shown=True, public=True, closes=+1)
+        # Approved, currently-open elections should be listed on the front page.
+        self.check_shown(shown=True, public=True, approved=True, closes=+1)
     
     def test_public_link(self):
-        # Public, currently-open elections should have a valid link on the front page.
+        # Approved, currently-open elections should have a valid link on the front page.
         slug = "abcd"
         title = "Yet another design contest"
         closing = datetime.now() + timedelta(days=1)
-        Election(key_name=slug, title=title, public=True, closes=closing).put()
+        Election(key_name=slug, title=title, public=True, approved=True, closes=closing).put()
         app = TestApp(application)
         response = app.get("/")
         response.click(title)
         self.assertIn(title, response)
     
+    def test_unapproved_unlisted(self):
+        # Unapproved elections should never appear on the front page.
+        self.check_shown(shown=False, public=True, approved=False)
+    
     def test_nonpublic_unlisted(self):
         # Non-public elections should never appear on the front page.
-        self.check_shown(shown=False, public=False)
+        self.check_shown(shown=False, public=False, approved=False)
     
     def test_finished_unlisted(self):
         # Elections should never appear on the front page after they close.

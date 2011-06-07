@@ -29,6 +29,7 @@ class Election(db.Model):
     starts = db.DateTimeProperty(auto_now_add=True)
     closes = db.DateTimeProperty()
     public = db.BooleanProperty(default=False)
+    approved = db.BooleanProperty(default=False)
 
 class Candidate(db.Model):
     title = db.StringProperty()
@@ -61,7 +62,7 @@ class Page(webapp.RequestHandler):
 class MainPage(Page):
     def get(self):
         now = datetime.now()
-        current = Election.gql("WHERE public = True AND closes > :1 ORDER BY closes LIMIT 10", now)
+        current = Election.gql("WHERE approved = True AND closes > :1 ORDER BY closes LIMIT 10", now)
         self.render("index.html", elections=current)
 
 class ListPage(Page):

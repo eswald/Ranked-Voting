@@ -224,6 +224,7 @@ class PublicTestCase(VotingTestCase):
     
     def test_form(self):
         # The creation form should have a checkbox for the public property.
+        # However, it shouldn't set the approved property.
         user = self.login()
         app = TestApp(application)
         page = app.get("/create")
@@ -232,6 +233,7 @@ class PublicTestCase(VotingTestCase):
         response = page.form.submit()
         fetched = Election.all().fetch(1)[0]
         self.assertEquals(fetched.public, True)
+        self.assertEquals(fetched.approved, False)
     
     def test_checked(self):
         user = self.login()
