@@ -231,6 +231,7 @@ class ResultPage(Page):
         methodnames = [(methods[key].__name__, key) for key in methods]
         self.render("election.html", election=election, ranks=results, methods=methodnames, method=method)
 
+webapp.template.register_template_library("voting.filters")
 application = webapp.WSGIApplication([
         ("/", MainPage),
         ("/create", CreatePage),
@@ -243,7 +244,6 @@ application = webapp.WSGIApplication([
 ], debug=True)
 
 def main():
-    webapp.template.register_template_library("voting.filters")
     run_wsgi_app(application)
 
 if __name__ == "__main__":
