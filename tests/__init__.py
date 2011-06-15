@@ -50,14 +50,11 @@ def setup():
 
 class VotingTestCase(unittest.TestCase):
     def setUp(self):
-        self.clear_datastore()
+        from google.appengine.ext import testbed
         self.logout()
-    
-    def clear_datastore(self):
-        # Use a fresh stub datastore.
-        from google.appengine.api import apiproxy_stub_map
-        
-        apiproxy_stub_map.apiproxy._APIProxyStubMap__stub_map["datastore_v3"].Clear()
+        self.testbed = testbed.Testbed()
+        self.testbed.activate()
+        self.testbed.init_datastore_v3_stub()
     
     def login(self, email="test@somewhere.com", admin=False):
         from os import environ

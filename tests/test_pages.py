@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from pages import Candidate, Election, Vote, application
+from pages import Candidate, Election, Vote, application, db
 from tests import VotingTestCase
 from webtest import TestApp
 
@@ -69,23 +69,49 @@ class ElectionTestCase(VotingTestCase):
         app = TestApp(application)
         response = app.get("/" + slug, status=404)
         self.assertEqual("404 Not Found", response.status)
+
+class VotePageTestCase(VotingTestCase):
+    def setUp(self):
+        super(VotingTestCase, self).setUp()
+        self.contest = Election(key_name=self.id(), title="Yet another contest")
+        self.contest.put()
+        self.candidates = [
+            Candidate(title="Favorite", parent=self.contest),
+            Candidate(title="Underdog", parent=self.contest),
+        ]
+        
+        for candidate in self.candidates:
+            candidate.put()
+        
+        candidates = db.GqlQuery("SELECT * FROM Candidate WHERE ANCESTOR IS :1", self.contest)
+        self.assertEqual(set(c.key().id for c in candidates), set(c.key().id for c in self.candidates))
+        
+        self.user = self.login()
+        self.app = TestApp(application)
+        self.page = self.app.get("/"+self.contest.key().name()+"/vote")
     
-    def test_voting(self):
-        slug = "abcd"
-        contest = Election(key_name=slug, title="Yet another contest")
-        contest.put()
-        first = Candidate(title="Favorite", parent=contest)
-        first.put()
-        second = Candidate(title="Underdog", parent=contest)
-        second.put()
-        user = self.login()
-        app = TestApp(application)
-        page = app.get("/"+slug+"/vote")
-        page.form.set("c"+str(first.key().id()), 2)
-        page.form.set("c"+str(second.key().id()), 4)
-        response = page.form.submit()
-        fetched = Vote.all().fetch(1)[0]
-        self.assertEquals(fetched.voter, user)
-        self.assertEquals(fetched.election.key(), contest.key())
-        self.assertEquals(fetched.ranks, str(first.key().id()) + ";" + str(second.key().id()))
+    def vote(self, ranks):
+        for key in ranks:
+            item_id = str(self.candidates[key].key().id())
+            self.page.form.set("c"+item_id, ranks[key])
+        self.page.form.submit()
+        return Vote.get_by_key_name(self.contest.key().name()+"/"+str(self.user.user_id()))
+    
+    def test_vote_user(self):
+        vote = self.vote({0: 2, 1: 4})
+        self.assertEquals(vote.voter, self.user)
+    
+    def test_vote_election(self):
+        vote = self.vote({0: 2, 1: 4})
+        self.assertEquals(vote.election.key(), self.contest.key())
+    
+    def test_vote_ranked(self):
+        expected = ";".join(str(c.key().id()) for c in self.candidates)
+        vote = self.vote(dict((n, n+2) for n in range(len(self.candidates))))
+        self.assertEquals(vote.ranks, expected)
+    
+    def test_voting_equal(self):
+        expected = ",".join(str(c.key().id()) for c in self.candidates)
+        vote = self.vote(dict((n, 2) for n in range(len(self.candidates))))
+        self.assertEquals(vote.ranks, expected)
 
