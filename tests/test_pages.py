@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from pages import Election, application
+from pages import Candidate, Election, Vote, application
 from tests import VotingTestCase
 from webtest import TestApp
 
@@ -69,4 +69,23 @@ class ElectionTestCase(VotingTestCase):
         app = TestApp(application)
         response = app.get("/" + slug, status=404)
         self.assertEqual("404 Not Found", response.status)
+    
+    def test_voting(self):
+        slug = "abcd"
+        contest = Election(key_name=slug, title="Yet another contest")
+        contest.put()
+        first = Candidate(title="Favorite", parent=contest)
+        first.put()
+        second = Candidate(title="Underdog", parent=contest)
+        second.put()
+        user = self.login()
+        app = TestApp(application)
+        page = app.get("/"+slug+"/vote")
+        page.form.set("c"+str(first.key().id()), 2)
+        page.form.set("c"+str(second.key().id()), 4)
+        response = page.form.submit()
+        fetched = Vote.all().fetch(1)[0]
+        self.assertEquals(fetched.voter, user)
+        self.assertEquals(fetched.election.key(), contest.key())
+        self.assertEquals(fetched.ranks, str(first.key().id()) + ";" + str(second.key().id()))
 
