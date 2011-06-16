@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from itertools import count, izip
 from pages import Candidate, Election, Vote, application, db
 from tests import VotingTestCase
 from webtest import TestApp
@@ -75,43 +76,64 @@ class VotePageTestCase(VotingTestCase):
         super(VotingTestCase, self).setUp()
         self.contest = Election(key_name=self.id(), title="Yet another contest")
         self.contest.put()
-        self.candidates = [
-            Candidate(title="Favorite", parent=self.contest),
-            Candidate(title="Underdog", parent=self.contest),
+        candidates = [
+            "Favorite",
+            "Middling",
+            "Underdog",
         ]
         
-        for candidate in self.candidates:
+        self.candidates = []
+        for title in candidates:
+            candidate = Candidate(title=title, parent=self.contest)
             candidate.put()
+            self.candidates.append(str(candidate.key().id()))
         
         candidates = db.GqlQuery("SELECT * FROM Candidate WHERE ANCESTOR IS :1", self.contest)
-        self.assertEqual(set(c.key().id for c in candidates), set(c.key().id for c in self.candidates))
+        self.assertEqual(set(str(c.key().id()) for c in candidates), set(self.candidates))
         
         self.user = self.login()
         self.app = TestApp(application)
         self.page = self.app.get("/"+self.contest.key().name()+"/vote")
     
     def vote(self, ranks):
-        for key in ranks:
-            item_id = str(self.candidates[key].key().id())
-            self.page.form.set("c"+item_id, ranks[key])
+        print ranks
+        for item_id in ranks:
+            self.page.form.set("c"+item_id, ranks[item_id])
         self.page.form.submit()
         return Vote.get_by_key_name(self.contest.key().name()+"/"+str(self.user.user_id()))
     
     def test_vote_user(self):
-        vote = self.vote({0: 2, 1: 4})
+        vote = self.vote(dict(izip(self.candidates, count(2))))
         self.assertEquals(vote.voter, self.user)
     
     def test_vote_election(self):
-        vote = self.vote({0: 2, 1: 4})
+        vote = self.vote(dict(izip(self.candidates, count(2))))
         self.assertEquals(vote.election.key(), self.contest.key())
     
     def test_vote_ranked(self):
-        expected = ";".join(str(c.key().id()) for c in self.candidates)
-        vote = self.vote(dict((n, n+2) for n in range(len(self.candidates))))
+        expected = str.join(";", self.candidates)
+        vote = self.vote(dict(izip(self.candidates, count(2))))
         self.assertEquals(vote.ranks, expected)
     
     def test_voting_equal(self):
-        expected = ",".join(str(c.key().id()) for c in self.candidates)
-        vote = self.vote(dict((n, 2) for n in range(len(self.candidates))))
+        expected = str.join(",", self.candidates)
+        vote = self.vote(dict.fromkeys(self.candidates, 2))
+        self.assertEquals(vote.ranks, expected)
+    
+    def test_voting_mixed(self):
+        first, second, third = self.candidates
+        expected = second+","+third+";"+first
+        vote = self.vote({first: 4, second: 2, third: 2})
+        self.assertEquals(vote.ranks, expected)
+    
+    def test_voting_with_unranked(self):
+        first, second, third = self.candidates
+        expected = second+";"+third
+        vote = self.vote({first: 0, second: 2, third: 4})
+        self.assertEquals(vote.ranks, expected)
+    
+    def test_voting_all_unranked(self):
+        expected = ""
+        vote = self.vote(dict.fromkeys(self.candidates, 0))
         self.assertEquals(vote.ranks, expected)
 
