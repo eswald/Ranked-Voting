@@ -96,7 +96,6 @@ class VotePageTestCase(VotingTestCase):
         self.page = self.app.get("/"+self.contest.key().name()+"/vote")
     
     def vote(self, ranks):
-        print ranks
         for item_id in ranks:
             self.page.form.set("c"+item_id, ranks[item_id])
         self.page.form.submit()
@@ -133,7 +132,6 @@ class VotePageTestCase(VotingTestCase):
         self.assertEquals(vote.ranks, expected)
     
     def test_voting_all_unranked(self):
-        expected = ""
         vote = self.vote(dict.fromkeys(self.candidates, 0))
-        self.assertEquals(vote.ranks, expected)
+        self.assertIsNone(vote)
 

@@ -189,14 +189,15 @@ class VotePage(Page):
                     ranks[rank].add(candidate)
         ranked = ";".join(",".join(sorted(ranks[key])) for key in sorted(ranks))
         
-        # Todo: Use a single transaction for this whole thing,
-        # folding the get_or_insert part into the transaction.
-        vote = Vote.get_or_insert(self._vote_key(election, user),
-            election=election, voter=user, ranks=ranked)
-        if vote.ranks != ranked:
-            vote.ranks = ranked
-            vote.modified = datetime.now()
-            vote.put()
+        if ranked:
+            # Todo: Use a single transaction for this whole thing,
+            # folding the get_or_insert part into the transaction.
+            vote = Vote.get_or_insert(self._vote_key(election, user),
+                election=election, voter=user, ranks=ranked)
+            if vote.ranks != ranked:
+                vote.ranks = ranked
+                vote.modified = datetime.now()
+                vote.put()
         
         self.redirect("/%s/results" % election.key().name())
     
