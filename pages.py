@@ -20,6 +20,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 from voting.methods import methods
+from voting.util import interleave
 
 class Election(db.Model):
     creator = db.UserProperty()
@@ -168,7 +169,7 @@ class VotePage(Page):
         if vote:
             entries = dict((c.key().id(), c) for c in candidates)
             keys = [[int(key) for key in rank.split(",")] for rank in vote.ranks.split(";")]
-            ranks = self._interleave(repeat([]), ([entries[key] for key in rank] for rank in keys))
+            ranks = interleave(repeat([]), ([entries[key] for key in rank] for rank in keys))
             unranked = [entries[key] for key in entries if key not in set(sum(keys, []))]
         else:
             ranks = [[]]
@@ -203,13 +204,6 @@ class VotePage(Page):
     
     def _vote_key(self, election, user):
         return "%s/%s" % (election.key().name(), user.user_id())
-    
-    @staticmethod
-    def _interleave(*sequences):
-        sequences = map(iter, sequences)
-        while sequences:
-            for seq in sequences:
-                yield seq.next()
 
 class ResultPage(Page):
     def get(self):
