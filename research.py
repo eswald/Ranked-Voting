@@ -1,5 +1,7 @@
 from itertools import combinations, permutations
 
+from voting.util import interleave
+
 candidates = "ABCD"
 
 def well_sorted(ballot):
@@ -28,10 +30,39 @@ def fully_ranked():
             
             yield tail
 
+def with_equality():
+    for matrix in fully_ranked():
+        length = len(matrix) - 1
+        ordered = 0
+        for pair in reversed(matrix):
+            if pair[0] > pair[1]:
+                break
+            ordered += 1
+        
+        for n in range(1 << length):
+            signs = []
+            for bit in range(length):
+                if n & (1 << bit):
+                    if matrix[-(bit+1)] < matrix[-(bit+2)]:
+                        break
+                    signs.insert(0, "=")
+                else:
+                    signs.insert(0, ">")
+            
+            if len(signs) == length:
+                result = str.join("", interleave(matrix, signs))
+                yield result
+                
+                tied = 1
+                while signs and signs.pop() == "=":
+                    tied += 1
+                if tied <= ordered:
+                    yield result + "=0"
+
 def main():
     count = 0
-    for ballot in fully_ranked():
-        print str.join(">", ballot)
+    for ballot in with_equality():
+        print ballot
         count += 1
     
     print count
