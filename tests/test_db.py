@@ -1,5 +1,6 @@
 from google.appengine.api.users import User
-from pages import Election, application
+from voting.models import Election
+from pages import application
 from tests import VotingTestCase
 from webtest import TestApp
 

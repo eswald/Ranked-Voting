@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from itertools import count, izip
-from pages import Candidate, Election, Vote, application, db
+from voting.models import Candidate, Election, Vote
+from pages import application, db
 from tests import VotingTestCase
 from webtest import TestApp
 

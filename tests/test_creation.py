@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 from webtest import TestApp
 from google.appengine.api.users import User
-from pages import Election, application
+from voting.models import Election
+from pages import application
 from tests import VotingTestCase
 
 class UserTestCase(VotingTestCase):
