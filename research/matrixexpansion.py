@@ -4,25 +4,46 @@ class MinionSolver(object):
     # http://minion.sourceforge.net/
     
     def __init__(self, filename):
+        try:
+            from collections import OrderedDict
+        except ImportError:
+            from ordereddict import OrderedDict
+        
         self.filename = filename
-        self.variables = []
+        self.variables = OrderedDict()
         self.constraints = []
+        self.sums = OrderedDict()
     
     def addVariables(self, varnames, minimum, maximum):
         for name in varnames:
-            self.variables.append("DISCRETE %s {%d..%d}" % (name, minimum, maximum))
+            self.variables[name] = "DISCRETE %s {%d..%d}" % (name, minimum, maximum)
+    
+    def check(self, varname):
+        if varname in self.variables:
+            return [varname]
+        if varname in self.sums:
+            return self.sums[varname]
+        raise NameError(varname)
     
     def constrainGreater(self, greater, lesser):
-        self.constraints.append("weightedsumgeq([1,-1],[%s,%s],1)" % (greater, lesser))
+        self.constraints.append("# %s > %s" % (greater, lesser))
+        greater = self.check(greater)
+        lesser = self.check(lesser)
+        constants = [1] * len(greater) + [-1] * len(lesser)
+        vector = str.join(",", greater + lesser)
+        self.constraints.append("weightedsumgeq(%s,[%s],1)" % (constants, vector))
     
-    def constrainEqual(self, *varnames):
-        self.constraints.append("eq(%s,%s)" % varnames)
+    def constrainEqual(self, first, second):
+        self.constraints.append("# %s = %s" % (first, second))
+        first = self.check(first)
+        second = self.check(second)
+        constants = [1] * len(first) + [-1] * len(second)
+        vector = str.join(",", first + second)
+        self.constraints.append("weightedsumgeq(%s,[%s],0)" % (constants, vector))
+        self.constraints.append("weightedsumleq(%s,[%s],0)" % (constants, vector))
     
     def defineSum(self, varname, parts):
-        vector = str.join(",", parts)
-        constants = str.join(",", ["1"] * len(vector.split(",")))
-        self.constraints.append("weightedsumgeq([%s,-1],[%s,%s],0)" % (constants, vector, varname))
-        self.constraints.append("weightedsumleq([%s,-1],[%s,%s],0)" % (constants, vector, varname))
+        self.sums[varname] = parts
     
     def solve(self):
         from subprocess import Popen, PIPE
@@ -31,7 +52,8 @@ class MinionSolver(object):
             tmpfile.write("MINION 3\n\n")
             
             tmpfile.write("**VARIABLES**\n\n")
-            for line in self.variables:
+            for name in self.variables:
+                line = self.variables[name]
                 tmpfile.write(line + "\n")
             
             tmpfile.write("\n**CONSTRAINTS**\n\n")
@@ -42,60 +64,31 @@ class MinionSolver(object):
         
         output = Popen(["./minion", self.filename], stdout=PIPE).communicate()[0]
         values = [line[4:].strip() for line in output.split("\n") if line.startswith("Sol:")]
+        
+        results = {}
         if len(values) == len(self.variables):
-            for line, value in zip(self.variables, values):
-                varname = line.split(" ")[1]
-                print "%s = %s" % (varname, value)
+            for name, value in zip(self.variables, values):
+                print "%s = %s" % (name, value)
+                results[name] = int(value)
         else:
             print output
-
-class PythonSolver(object):
-    # Install the python-constraint package to use this solver.
-    # Pure Python, but very slow.
-    
-    def __init__(self):
-        from constraint import Problem
-        self.problem = Problem()
-        self.varnames = []
-    
-    def addVariables(self, varnames, minimum, maximum):
-        varnames = list(varnames)
-        self.varnames.extend(varnames)
-        self.problem.addVariables(varnames, range(minimum, maximum + 1))
-    
-    def constrainGreater(self, greater, lesser):
-        from operator import gt
-        self.problem.addConstraint(gt, [greater, lesser])
-    
-    def constrainEqual(self, *varnames):
-        from constraint import AllEqualConstraint
-        self.problem.addConstraint(AllEqualConstraint(), *varnames)
-    
-    def defineSum(self, varname, parts):
-        def total(name, *parts):
-            return name == sum(parts)
         
-        self.problem.addConstraint(total, [varname] + list(parts))
-    
-    def solve(self):
-        solution = self.problem.getSolution()
-        for varname in self.varnames:
-            print "%s = %d" % (varname, solution[varname])
+        for name in self.sums:
+            value = sum(results[var] for var in self.sums[name])
+            print "%s = %s" % (name, value)
 
 def solve(candidates, statement, solver, winner=None):
     from itertools import combinations, permutations
     
     statement = statement.split(">")
     perms = [str.join("", perm) for perm in permutations(candidates.lower())]
-    solver.addVariables(candidates, 1, 99)
     solver.addVariables(perms, 0, 20)
     
     for a, b in combinations(candidates, 2):
         ab = a + b
         ba = b + a
-        solver.addVariables([ab, ba], 1, 99)
-        solver.defineSum(ab, (perm for perm in perms if perm.find(a.lower()) < perm.find(b.lower())))
-        solver.defineSum(ba, (perm for perm in perms if perm.find(b.lower()) < perm.find(a.lower())))
+        solver.defineSum(ab, [perm for perm in perms if perm.find(a.lower()) < perm.find(b.lower())])
+        solver.defineSum(ba, [perm for perm in perms if perm.find(b.lower()) < perm.find(a.lower())])
         
         if ab in statement:
             solver.constrainGreater(ab, ba)
@@ -107,10 +100,12 @@ def solve(candidates, statement, solver, winner=None):
     for n in range(1, len(statement)):
         solver.constrainGreater(statement[n-1], statement[n])
     
+    for c in candidates:
+        solver.defineSum(c, [perm for perm in perms if perm.startswith(c.lower())])
+    
     if winner:
         # Rig the election to have a specific winner
         for c in candidates:
-            solver.defineSum(c, (perm for perm in perms if perm.startswith(c.lower())))
             if c != winner:
                 solver.constrainGreater(winner, c)
     
