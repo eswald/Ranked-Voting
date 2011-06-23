@@ -1,4 +1,4 @@
-from itertools import count
+from itertools import combinations, count, permutations
 
 try:
     from collections import OrderedDict
@@ -110,8 +110,6 @@ class CustomSolver(object):
             print "%s = %s" % (name, value)
 
 def solve(candidates, statement, solver, winner=None):
-    from itertools import combinations, permutations
-    
     statement = statement.split(">")
     perms = [str.join("", perm) for perm in permutations(candidates.lower())]
     solver.addVariables(perms, 0, 20)
