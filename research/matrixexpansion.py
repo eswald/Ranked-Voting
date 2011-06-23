@@ -1,3 +1,5 @@
+from itertools import count
+
 try:
     from collections import OrderedDict
 except ImportError:
@@ -38,7 +40,7 @@ class CustomSolver(object):
     
     def solve(self):
         backsies = []
-        while True:
+        for iteration in count(1):
             # Errors: negative contributions, positive contributions.
             # When sorted by value, variables too large should be at the head,
             # variables too small at the tail.
@@ -90,7 +92,8 @@ class CustomSolver(object):
             
             #for name in varnames:
             #    print ((name, self.variables[name], errors[name]))
-            print ("%d; moving 1 from %s (%d: %d/%d) to %s (%d: %d/%d)" % (total_errors,
+            print ("%d: %d; moving 1 from %s (%d: %d/%d) to %s (%d: %d/%d)" % (
+                    iteration, total_errors,
                     high, self.variables[high], errors[high][0], errors[high][1],
                     low, self.variables[low], errors[low][0], errors[low][1],
             ))
