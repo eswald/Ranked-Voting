@@ -1,14 +1,115 @@
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
+
+class CustomSolver(object):
+    # Even Minion is getting too slow.
+    # Maybe that's because it's such a general solver.
+    
+    def __init__(self):
+        self.variables = OrderedDict()
+        self.constraints = []
+        self.sums = OrderedDict()
+    
+    def addVariables(self, varnames, minimum, maximum):
+        for name in varnames:
+            self.variables[name] = (maximum - minimum) // 2
+    
+    def check(self, varname):
+        if varname in self.variables:
+            return [varname]
+        if varname in self.sums:
+            return self.sums[varname]
+        raise NameError(varname)
+    
+    def constrainGreater(self, greater, lesser):
+        greater = self.check(greater)
+        lesser = self.check(lesser)
+        self.constraints.append((greater, lesser, True))
+    
+    def constrainEqual(self, first, second):
+        first = self.check(first)
+        second = self.check(second)
+        self.constraints.append((first, second, False))
+    
+    def defineSum(self, varname, parts):
+        self.sums[varname] = parts
+    
+    def solve(self):
+        backsies = []
+        while True:
+            # Errors: negative contributions, positive contributions.
+            # When sorted by value, variables too large should be at the head,
+            # variables too small at the tail.
+            errors = dict((key, [0, 0]) for key in self.variables)
+            total_errors = 0
+            for left, right, greater in self.constraints:
+                left_hand = sum(self.variables[name] for name in left)
+                right_hand = sum(self.variables[name] for name in right)
+                difference = left_hand - right_hand
+                if greater:
+                    difference -= 1
+                    if difference >= 0:
+                        left_bars = [0, difference]
+                        right_bars = [0, -difference]
+                        difference = 0
+                    else:
+                        left_bars = [-difference, 0]
+                        right_bars = [difference, 0]
+                else:
+                    left_bars = [-difference, 0]
+                    right_bars = [difference, 0]
+                total_errors += abs(difference)
+                
+                #print "%s %s %s" % (left, ">" if greater else "=", right)
+                #print "Left: %s = %d" % (str.join(" + ", [str(self.variables[name]) for name in left]), left_hand)
+                #print "Right: %s = %d" % (str.join(" + ", [str(self.variables[name]) for name in right]), right_hand)
+                #print "Difference: %d" % difference
+                
+                for name in left:
+                    errors[name][0] += left_bars[0]
+                    errors[name][1] += left_bars[1]
+                for name in right:
+                    errors[name][0] += right_bars[0]
+                    errors[name][1] += right_bars[1]
+            
+            if not total_errors:
+                break
+            
+            varnames = list(self.variables)
+            varnames.sort(key=errors.get)
+            high = varnames[0]
+            low = varnames[-1]
+            
+            if high in backsies:
+                high = varnames[1]
+            if low in backsies:
+                low = varnames[-2]
+            backsies = [high, low]
+            
+            #for name in varnames:
+            #    print ((name, self.variables[name], errors[name]))
+            print ("%d; moving 1 from %s (%d: %d/%d) to %s (%d: %d/%d)" % (total_errors,
+                    high, self.variables[high], errors[high][0], errors[high][1],
+                    low, self.variables[low], errors[low][0], errors[low][1],
+            ))
+            
+            self.variables[low] += 1
+            self.variables[high] -= 1
+        
+        for name in self.variables:
+            print "%s = %s" % (name, self.variables[name])
+        
+        for name in self.sums:
+            value = sum(self.variables[var] for var in self.sums[name])
+            print "%s = %s" % (name, value)
 
 class MinionSolver(object):
     # Install the minion program to use this solver.
     # http://minion.sourceforge.net/
     
     def __init__(self, filename):
-        try:
-            from collections import OrderedDict
-        except ImportError:
-            from ordereddict import OrderedDict
-        
         self.filename = filename
         self.variables = OrderedDict()
         self.constraints = []
@@ -16,7 +117,7 @@ class MinionSolver(object):
     
     def addVariables(self, varnames, minimum, maximum):
         for name in varnames:
-            self.variables[name] = "DISCRETE %s {%d..%d}" % (name, minimum, maximum)
+            self.variables[name] = "BOUND %s {%d..%d}" % (name, minimum, maximum)
     
     def check(self, varname):
         if varname in self.variables:
@@ -112,5 +213,5 @@ def solve(candidates, statement, solver, winner=None):
     solver.solve()
 
 if __name__ == "__main__":
-    #solve("ABCD", "AB>AC>AD>BC>BD>CD", MinionSolver("ab-ac-ad-bc-bd-cd"))
-    solve("ABC", "AB>AC>BC", MinionSolver("ab-ac-bc"), "B")
+    solve("ABCD", "AB>AC>AD>BC>BD>CD", CustomSolver(), "D")
+    #solve("ABC", "AB>AC>BC", CustomSolver(), "B")
