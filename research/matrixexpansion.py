@@ -84,7 +84,7 @@ class CustomSolver(object):
             high = varnames[0]
             low = varnames[-1]
             
-            if high in backsies:
+            if high in backsies or not self.variables[high]:
                 high = varnames[1]
             if low in backsies:
                 low = varnames[-2]
