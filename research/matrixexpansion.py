@@ -96,7 +96,8 @@ class CustomSolver(object):
             ))
             
             self.variables[low] += 1
-            self.variables[high] -= 1
+            if self.variables[high] >= 1:
+                self.variables[high] -= 1
         
         for name in self.variables:
             print "%s = %s" % (name, self.variables[name])
@@ -213,5 +214,5 @@ def solve(candidates, statement, solver, winner=None):
     solver.solve()
 
 if __name__ == "__main__":
-    solve("ABCD", "AB>AC>AD>BC>BD>CD", CustomSolver(), "D")
+    solve("ABCD", "AB>CD>BD>AD>BC>AC", CustomSolver(), "D")
     #solve("ABC", "AB>AC>BC", CustomSolver(), "B")
