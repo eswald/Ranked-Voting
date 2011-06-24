@@ -148,14 +148,14 @@ class BallotFinder(object):
     
     def report(self):
         values = [
-            ((self.variables[name], name) for name in self.variables),
-            ((sum(self.variables[var] for var in self.pairs[name]), name) for name in self.pairs),
-            ((sum(self.variables[var] for var in self.candidates[name]), name) for name in self.candidates),
+            ((-self.variables[name], name) for name in self.variables),
+            ((-sum(self.variables[var] for var in self.pairs[name]), name) for name in self.pairs),
+            ((-sum(self.variables[var] for var in self.candidates[name]), name) for name in self.candidates),
         ]
         
         for valueset in values:
             for value, name in sorted(valueset):
-                print "%s = %s" % (name, value)
+                print "%s = %s" % (name, -value)
 
 def main(statement, winner=None):
     candidates = set(statement) - set("=>")
