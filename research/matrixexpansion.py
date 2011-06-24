@@ -112,21 +112,25 @@ class BallotFinder(object):
             self.variables[high] -= 1
     
     def solve(self, statement, winner=None):
-        ranks = statement.split(">")
-        
         for a, b in combinations(self.candidates, 2):
             ab = a + b
             ba = b + a
             
-            if ab in ranks:
+            if ab in statement:
                 self.constrainGreater(ab, ba)
-            elif ba in ranks:
+            elif ba in statement:
                 self.constrainGreater(ba, ab)
             else:
                 self.constrainEqual(ab, ba)
         
-        for n in range(1, len(ranks)):
-            self.constrainGreater(ranks[n-1], ranks[n])
+        prev = None
+        for rank in statement.split(">"):
+            pairs = rank.split("=")
+            if prev:
+                self.constrainGreater(prev, pairs[0])
+            for n in range(len(pairs) - 1):
+                self.constrainEqual(pairs[n], pairs[n+1])
+            prev = pairs[-1]
         
         if winner:
             # Rig the election to have a specific winner
