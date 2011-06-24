@@ -42,6 +42,7 @@ class BallotFinder(object):
         # When sorted by value, variables too large should be at the head,
         # variables too small at the tail.
         errors = dict((key, [0, 0]) for key in self.variables)
+        constraints = []
         total_errors = 0
         for left, right, greater in self.constraints:
             left_hand = sum(self.variables[name] for name in left)
@@ -61,34 +62,45 @@ class BallotFinder(object):
                 right_bars = [difference, 0]
             total_errors += abs(difference)
             
-            #print "%s %s %s" % (left, ">" if greater else "=", right)
-            #print "Left: %s = %d" % (str.join(" + ", [str(self.variables[name]) for name in left]), left_hand)
-            #print "Right: %s = %d" % (str.join(" + ", [str(self.variables[name]) for name in right]), right_hand)
-            #print "Difference: %d" % difference
-            
             for name in left:
                 errors[name][0] += left_bars[0]
                 errors[name][1] += left_bars[1]
             for name in right:
                 errors[name][0] += right_bars[0]
                 errors[name][1] += right_bars[1]
+            
+            if difference:
+                low, high = (left, right) if difference < 0 else (right, left)
+                constraints.append((abs(difference), low, high))
         
-        if not total_errors:
+        if not constraints:
             return True
         
-        varnames = list(self.variables)
-        varnames.sort(key=errors.get)
-        high = varnames[0]
-        low = varnames[-1]
+        constraints.sort()
+        fixer = constraints[-1]
+        lows = sorted(fixer[1], key=errors.get)
+        highs = sorted(fixer[2], key=errors.get)
         
-        if high in self.backsies or not self.variables[high]:
-            high = varnames[1]
-        if low in self.backsies:
-            low = varnames[-2]
+        for item in highs:
+            if self.variables[item] and item not in self.backsies:
+                high = item
+                break
+        else:
+            high = highs[0]
+        
+        for item in reversed(lows):
+            if item not in self.backsies:
+                low = item
+                break
+        else:
+            low = lows[-1]
+        
         self.backsies = [high, low]
         
-        #for name in varnames:
-        #    print ((name, self.variables[name], errors[name]))
+        #for name in lows:
+        #    print "Low:", name, self.variables[name], errors[name], name in self.backsies, name is low
+        #for name in highs:
+        #    print "High:", name, self.variables[name], errors[name], name in self.backsies, name is high
         print ("%d: %d; moving 1 from %s (%d: %d/%d) to %s (%d: %d/%d)" % (
                 iteration, total_errors,
                 high, self.variables[high], errors[high][0], errors[high][1],
@@ -143,7 +155,8 @@ class BallotFinder(object):
 
 def main(statement, winner=None):
     candidates = set(statement) - set("=>")
-    assert winner in candidates
+    if winner:
+        assert winner in candidates
     solver = BallotFinder(candidates)
     solver.solve(statement, winner)
     solver.report()
@@ -153,5 +166,5 @@ if __name__ == "__main__":
     try:
         main(*argv[1:])
     except:
-        print "%s 'AB>CD>BD=AD>BC>AC' [D]"
+        print argv[0] + " 'AB>CD>BD=AD>BC>AC' [D]"
         raise
