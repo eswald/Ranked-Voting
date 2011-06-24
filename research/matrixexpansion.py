@@ -116,7 +116,10 @@ class BallotFinder(object):
             ab = a + b
             ba = b + a
             
-            if ab in statement:
+            if ab in statement and ba in statement:
+                # The statement itself contains the ordering information.
+                pass
+            elif ab in statement:
                 self.constrainGreater(ab, ba)
             elif ba in statement:
                 self.constrainGreater(ba, ab)
