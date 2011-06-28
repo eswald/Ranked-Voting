@@ -11,16 +11,16 @@ class BallotFinder(object):
         perms = [str.join("", perm) for perm in permutations(c.lower() for c in candidates)]
         self.variables = dict.fromkeys(perms, 10)
         
-        self.candidates = dict((c, [perm for perm in perms if perm.startswith(c.lower())]) for c in candidates)
+        self.candidates = dict((c, set(perm for perm in perms if perm.startswith(c.lower()))) for c in candidates)
         
         self.pairs = {}
         for a, b in combinations(candidates, 2):
-            self.pairs[a+b] = [perm for perm in perms if perm.find(a.lower()) < perm.find(b.lower())]
-            self.pairs[b+a] = [perm for perm in perms if perm.find(b.lower()) < perm.find(a.lower())]
+            self.pairs[a+b] = set(perm for perm in perms if perm.find(a.lower()) < perm.find(b.lower()))
+            self.pairs[b+a] = set(perm for perm in perms if perm.find(b.lower()) < perm.find(a.lower()))
     
     def check(self, varname):
         if varname in self.variables:
-            return [varname]
+            return set([varname])
         if varname in self.candidates:
             return self.candidates[varname]
         if varname in self.pairs:
@@ -30,11 +30,15 @@ class BallotFinder(object):
     def constrainGreater(self, greater, lesser):
         greater = self.check(greater)
         lesser = self.check(lesser)
+        greater, lesser = greater - lesser, lesser - greater
+        print "%s > %s" % (str.join(" + ", greater), str.join(" + ", lesser))
         self.constraints.append((greater, lesser, True))
     
     def constrainEqual(self, first, second):
         first = self.check(first)
         second = self.check(second)
+        first, second = first - second, second - first
+        print "%s = %s" % (str.join(" + ", first), str.join(" + ", second))
         self.constraints.append((first, second, False))
     
     def iterate(self, iteration):
