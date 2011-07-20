@@ -28,12 +28,12 @@ class BallotFinder(object):
         raise NameError(varname)
     
     def constrainGreater(self, greater, lesser):
-        greater = self.check(greater)
-        lesser = self.check(lesser)
-        greater, lesser = greater - lesser, lesser - greater
-        if greater or lesser:
-            print "%s > %s" % (str.join(" + ", greater), str.join(" + ", lesser))
-            self.constraints.append((greater, lesser, True))
+        bigger = self.check(greater)
+        smaller = self.check(lesser)
+        bigger, smaller = bigger - smaller, smaller - bigger
+        if bigger or smaller:
+            print "%s > %s: %s > %s" % (greater, lesser, str.join(" + ", bigger), str.join(" + ", smaller))
+            self.constraints.append((bigger, smaller, True))
         else:
             # A given set of variables cannot be greater than itself.
             raise ValueError("Unsatisfiable constraint")
