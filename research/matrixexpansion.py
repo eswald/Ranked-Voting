@@ -1,5 +1,7 @@
 from itertools import combinations, count, permutations
 
+from voting.methods import methods
+
 class BallotFinder(object):
     r'''Finds a sample set of ballots for a given pairwise matrix.
         Not really intended for more general purpose constraint solving.
@@ -168,6 +170,12 @@ class BallotFinder(object):
         for valueset in values:
             for value, name in sorted(valueset):
                 print "%s = %s" % (name, -value)
+        
+        for method in methods:
+            ballots = [(key.upper(), self.variables[key]) for key in self.variables]
+            result = methods[method](ballots, set(self.candidates))
+            rewritten = " > ".join("=".join(sorted(r)) for r in result)
+            print "%-8s\t%s" % (method+":", rewritten)
 
 def main(statement, winner=None):
     candidates = set(statement) - set("=>")
