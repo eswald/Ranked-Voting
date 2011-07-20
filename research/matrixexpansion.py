@@ -31,15 +31,20 @@ class BallotFinder(object):
         greater = self.check(greater)
         lesser = self.check(lesser)
         greater, lesser = greater - lesser, lesser - greater
-        print "%s > %s" % (str.join(" + ", greater), str.join(" + ", lesser))
-        self.constraints.append((greater, lesser, True))
+        if greater or lesser:
+            print "%s > %s" % (str.join(" + ", greater), str.join(" + ", lesser))
+            self.constraints.append((greater, lesser, True))
+        else:
+            # A given set of variables cannot be greater than itself.
+            raise ValueError("Unsatisfiable constraint")
     
     def constrainEqual(self, first, second):
         first = self.check(first)
         second = self.check(second)
         first, second = first - second, second - first
-        print "%s = %s" % (str.join(" + ", first), str.join(" + ", second))
-        self.constraints.append((first, second, False))
+        if first or second:
+            print "%s = %s" % (str.join(" + ", first), str.join(" + ", second))
+            self.constraints.append((first, second, False))
     
     def iterate(self, iteration):
         # Errors: negative contributions, positive contributions.
