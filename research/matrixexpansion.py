@@ -2,6 +2,36 @@ from itertools import combinations, count, permutations
 
 from voting.methods import methods
 
+class Sum(dict):
+    def __init__(self, namespace, items = {}):
+        self.counts = dict.fromkeys(items, 1)
+        self.values = namespace
+    
+    def __call__(self):
+        return sum(self.values[name] * self.counts[name] for name in self.counts)
+    
+    def __iter__(self):
+        for name in self.counts:
+            yield name
+    
+    def __str__(self):
+        return " + ".join(name if self.counts[name] == 1 else "%d*%s" % (self.counts[name], name) for name in sorted(self))
+    
+    def __sub__(self, other):
+        result = self.__class__(self.values)
+        for name in self.counts:
+            count = self.counts[name] - other.counts.get(name, 0)
+            if count > 0:
+                result.counts[name] = count
+        return result
+    
+    def __setitem__(self, name, value):
+        self.counts[name] = value
+    
+    def __nonzero__(self):
+        return any(self.counts.values())
+            
+
 class BallotFinder(object):
     r'''Finds a sample set of ballots for a given pairwise matrix.
         Not really intended for more general purpose constraint solving.
@@ -13,16 +43,24 @@ class BallotFinder(object):
         perms = [str.join("", perm) for perm in permutations(c.lower() for c in candidates)]
         self.variables = dict.fromkeys(perms, 10)
         
-        self.candidates = dict((c, set(perm for perm in perms if perm.startswith(c.lower()))) for c in candidates)
+        self.candidates = dict((c, Sum(self.variables, (perm for perm in perms if perm.startswith(c.lower())))) for c in candidates)
         
         self.pairs = {}
         for a, b in combinations(candidates, 2):
-            self.pairs[a+b] = set(perm for perm in perms if perm.find(a.lower()) < perm.find(b.lower()))
-            self.pairs[b+a] = set(perm for perm in perms if perm.find(b.lower()) < perm.find(a.lower()))
+            self.pairs[a+b] = Sum(self.variables, (perm for perm in perms if perm.find(a.lower()) < perm.find(b.lower())))
+            self.pairs[b+a] = Sum(self.variables, (perm for perm in perms if perm.find(b.lower()) < perm.find(a.lower())))
+        
+        self.bordas = dict((c, Sum(self.variables)) for c in candidates)
+        last = len(candidates) - 1
+        for perm in perms:
+            for pos, char in enumerate(perm):
+                self.bordas[char.upper()][perm] = last - 2*pos
     
     def check(self, varname):
+        if varname.startswith("Borda-"):
+            return self.bordas[varname[6:]]
         if varname in self.variables:
-            return set([varname])
+            return Sum([varname])
         if varname in self.candidates:
             return self.candidates[varname]
         if varname in self.pairs:
@@ -34,18 +72,18 @@ class BallotFinder(object):
         smaller = self.check(lesser)
         bigger, smaller = bigger - smaller, smaller - bigger
         if bigger or smaller:
-            print "%s > %s: %s > %s" % (greater, lesser, str.join(" + ", bigger), str.join(" + ", smaller))
+            print "%s > %s: %s > %s" % (greater, lesser, bigger, smaller)
             self.constraints.append((bigger, smaller, True))
         else:
             # A given set of variables cannot be greater than itself.
             raise ValueError("Unsatisfiable constraint")
     
-    def constrainEqual(self, first, second):
-        first = self.check(first)
-        second = self.check(second)
+    def constrainEqual(self, left, right):
+        first = self.check(left)
+        second = self.check(right)
         first, second = first - second, second - first
         if first or second:
-            print "%s = %s" % (str.join(" + ", first), str.join(" + ", second))
+            print "%s = %s: %s = %s" % (left, right, first, second)
             self.constraints.append((first, second, False))
     
     def iterate(self, iteration):
@@ -56,9 +94,7 @@ class BallotFinder(object):
         constraints = []
         total_errors = 0
         for left, right, greater in self.constraints:
-            left_hand = sum(self.variables[name] for name in left)
-            right_hand = sum(self.variables[name] for name in right)
-            difference = left_hand - right_hand
+            difference = left() - right()
             if greater:
                 difference -= 1
                 if difference >= 0:
@@ -122,7 +158,7 @@ class BallotFinder(object):
         if self.variables[high] >= 1:
             self.variables[high] -= 1
     
-    def solve(self, statement, winner=None):
+    def setup(self, statement):
         for a, b in combinations(self.candidates, 2):
             ab = a + b
             ba = b + a
@@ -145,13 +181,20 @@ class BallotFinder(object):
             for n in range(len(pairs) - 1):
                 self.constrainEqual(pairs[n], pairs[n+1])
             prev = pairs[-1]
-        
-        if winner:
-            # Rig the election to have a specific winner
-            for c in self.candidates:
-                if c != winner:
-                    self.constrainGreater(winner, c)
-        
+    
+    def plurality(self, winner):
+        # Rig the election to have a specific winner
+        for c in self.candidates:
+            if c != winner:
+                self.constrainGreater(winner, c)
+    
+    def borda(self, winner):
+        # Rig the election to have a specific winner
+        for c in self.candidates:
+            if c != winner:
+                self.constrainGreater("Borda-"+winner, "Borda-"+c)
+    
+    def solve(self):
         self.backsies = []
         solved = False
         iteration = count(1)
@@ -163,8 +206,9 @@ class BallotFinder(object):
     def report(self):
         values = [
             ((-self.variables[name], name) for name in self.variables),
-            ((-sum(self.variables[var] for var in self.pairs[name]), name) for name in self.pairs),
-            ((-sum(self.variables[var] for var in self.candidates[name]), name) for name in self.candidates),
+            ((-self.pairs[name](), name) for name in self.pairs),
+            ((-self.candidates[name](), name) for name in self.candidates),
+            ((-self.bordas[name](), "Borda-"+name) for name in self.bordas),
         ]
         
         for valueset in values:
@@ -182,7 +226,11 @@ def main(statement, winner=None):
     if winner:
         assert winner in candidates
     solver = BallotFinder(candidates)
-    solver.solve(statement, winner)
+    solver.setup(statement)
+    if winner:
+        #solver.plurality(winner)
+        solver.borda(winner)
+    solver.solve()
     solver.report()
 
 if __name__ == "__main__":
