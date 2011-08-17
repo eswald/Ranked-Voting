@@ -57,7 +57,7 @@ def with_equality():
                 while signs and signs.pop() == "=":
                     tied += 1
                 if tied <= ordered:
-                    yield result + "=0"
+                    yield result + "=" + (result[-1:result.rfind(">"):-1] or result[::-1])
 
 def main():
     count = 0
