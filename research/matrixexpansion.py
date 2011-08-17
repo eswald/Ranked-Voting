@@ -2,7 +2,7 @@ from itertools import combinations, count, permutations
 
 # sudo apt-get install glpk python-glpk
 # pip install pulp
-from pulp import GLPK, LpVariable, LpProblem, LpMinimize, LpStatus, value as LpValue
+from pulp import COIN, LpVariable, LpProblem, LpMinimize, LpStatus, value as LpValue
 
 from voting.methods import methods
 
@@ -132,7 +132,7 @@ class BallotFinder(object):
     
     def solve(self):
         #print self.problem
-        status = self.problem.solve(GLPK(msg = 0))
+        status = self.problem.solve(COIN())
         print "Status:", LpStatus[status]
     
     def report(self):
