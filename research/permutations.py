@@ -2,9 +2,7 @@ from itertools import combinations, permutations
 
 from voting.util import interleave
 
-candidates = "ABCD"
-
-def well_sorted(ballot):
+def well_sorted(ballot, candidates):
     ballot = str.join("", ballot)
     for a, b in combinations(candidates[2:], 2):
         if (ballot.find(a) < ballot.find(b)) != (a < b):
@@ -12,7 +10,8 @@ def well_sorted(ballot):
     
     return True
 
-def fully_ranked():
+def fully_ranked(candidates):
+    candidates = sorted(candidates)
     pairs = sorted(str.join("", sorted(pair)) for pair in combinations(candidates, 2))
     head = pairs.pop(0)
     length = len(pairs)
@@ -25,13 +24,13 @@ def fully_ranked():
                     tail[-(bit+1)] = tail[-(bit+1)][::-1]
             
             tail.insert(0, head)
-            if not well_sorted(tail):
+            if not well_sorted(tail, candidates):
                 continue
             
             yield tail
 
-def with_equality():
-    for matrix in fully_ranked():
+def with_equality(candidates):
+    for matrix in fully_ranked(candidates):
         length = len(matrix) - 1
         ordered = 0
         for pair in reversed(matrix):
@@ -59,13 +58,14 @@ def with_equality():
                 if tied <= ordered:
                     yield result + "=" + (result[-1:result.rfind(">"):-1] or result[::-1])
 
-def main():
+def main(candidates = "ABCD"):
     count = 0
-    for ballot in with_equality():
+    for ballot in with_equality(candidates):
         print ballot
         count += 1
     
     print count
 
 if __name__ == "__main__":
-    main()
+    from sys import argv
+    main(*argv[1:])
