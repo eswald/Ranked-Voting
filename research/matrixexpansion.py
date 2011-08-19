@@ -186,7 +186,7 @@ class BallotFinder(object):
             yield name
         
         for name in sorted(self.bordas):
-            yield name
+            yield "Borda-"+name
         
         for name in sorted(methods):
             yield name
