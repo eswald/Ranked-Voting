@@ -50,10 +50,9 @@ class BallotFinder(object):
     '''#"""#'''
     
     def __init__(self, candidates):
-        self.constraints = []
-        
         perms = [str.join("", perm) for perm in permutations(c.lower() for c in candidates)]
         self.variables = dict((name, LpVariable(name, 0, cat="Integer")) for name in perms)
+        self.total = Sum(self.variables, perms)
         
         self.candidates = dict((c, Sum(self.variables, (perm for perm in perms if perm.startswith(c.lower())))) for c in candidates)
         
@@ -138,6 +137,7 @@ class BallotFinder(object):
     def report(self):
         values = [
             ((-LpValue(self.variables[name]), name) for name in self.variables),
+            [(-self.total(), "Total")],
             ((-self.pairs[name](), name) for name in self.pairs),
             ((-self.candidates[name](), name) for name in self.candidates),
             ((-self.bordas[name](), "Borda-"+name) for name in self.bordas),
