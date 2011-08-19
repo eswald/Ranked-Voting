@@ -81,13 +81,13 @@ class BallotFinder(object):
     def constrainGreater(self, greater, lesser):
         bigger = self.check(greater)
         smaller = self.check(lesser)
-        print "%s > %s: %s > %s" % (greater, lesser, bigger, smaller)
+        #print "%s > %s: %s > %s" % (greater, lesser, bigger, smaller)
         self.problem += bigger > smaller
     
     def constrainEqual(self, left, right):
         first = self.check(left)
         second = self.check(right)
-        print "%s = %s: %s = %s" % (left, right, first, second)
+        #print "%s = %s: %s = %s" % (left, right, first, second)
         self.problem += first == second
     
     def setup(self, statement):
@@ -132,7 +132,7 @@ class BallotFinder(object):
     def solve(self):
         #print self.problem
         status = self.problem.solve(COIN())
-        print "Status:", LpStatus[status]
+        return LpStatus[status]
     
     def report(self):
         values = [
@@ -152,6 +152,44 @@ class BallotFinder(object):
             result = methods[method](ballots, set(self.candidates))
             rewritten = " > ".join("=".join(sorted(r)) for r in result)
             print "%-8s\t%s" % (method+":", rewritten)
+    
+    def results(self):
+        for name in sorted(self.variables):
+            yield LpValue(self.variables[name])
+        
+        yield self.total()
+        
+        for name in sorted(self.pairs):
+            yield self.pairs[name]()
+        
+        for name in sorted(self.candidates):
+            yield self.candidates[name]()
+        
+        for name in sorted(self.bordas):
+            yield self.bordas[name]()
+        
+        ballots = [(key.upper(), LpValue(self.variables[key])) for key in self.variables]
+        for method in sorted(methods):
+            result = methods[method](ballots, set(self.candidates))
+            yield " > ".join("=".join(sorted(r)) for r in result)
+    
+    def headers(self):
+        for name in sorted(self.variables):
+            yield name
+        
+        yield "Total"
+        
+        for name in sorted(self.pairs):
+            yield name
+        
+        for name in sorted(self.candidates):
+            yield name
+        
+        for name in sorted(self.bordas):
+            yield name
+        
+        for name in sorted(methods):
+            yield name
 
 def main(statement, winner=None):
     candidates = set(statement) - set("=>")
@@ -162,7 +200,8 @@ def main(statement, winner=None):
     if winner:
         #solver.plurality(winner)
         solver.borda(winner)
-    solver.solve()
+    status = solver.solve()
+    print "Status:", status
     solver.report()
 
 if __name__ == "__main__":
